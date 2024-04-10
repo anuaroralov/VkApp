@@ -17,10 +17,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.rememberDismissState
-import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 
@@ -56,16 +57,27 @@ fun MainScreen(viewModel: MyViewModel = androidx.lifecycle.viewmodel.compose.vie
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(items = feedPosts.value, key = { it.id }) { feedPost ->
-                val dismissState = rememberDismissState()
-                if (dismissState.isDismissed(DismissDirection.EndToStart)) {
-                    viewModel.removeFeedPost(feedPost)
+                val swipeToDismissBoxState = rememberSwipeToDismissBoxState()
+
+                LaunchedEffect(swipeToDismissBoxState.currentValue) {
+                    if (swipeToDismissBoxState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                        viewModel.removeFeedPost(feedPost)
+                    }
                 }
-                SwipeToDismiss(
+
+                SwipeToDismissBox(
                     modifier = Modifier.animateItemPlacement(),
-                    state = dismissState,
-                    directions = setOf(DismissDirection.EndToStart),
-                    background = {},
-                    dismissContent = {
+                    state = swipeToDismissBoxState,
+                    backgroundContent = {
+                        if (swipeToDismissBoxState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) {
+
+                        } else if (swipeToDismissBoxState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+
+                        }
+                    },
+                    enableDismissFromEndToStart = true,
+                    enableDismissFromStartToEnd = false,
+                    content = {
                         PostCard(
                             feedPost = feedPost,
                             onLikeClickListener = { statisticItem ->
@@ -81,8 +93,6 @@ fun MainScreen(viewModel: MyViewModel = androidx.lifecycle.viewmodel.compose.vie
                     }
                 )
             }
-
         }
-
     }
 }
