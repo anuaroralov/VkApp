@@ -34,7 +34,9 @@ import com.example.vkapp.domain.StatisticType
 fun PostCard(
     modifier: Modifier = Modifier,
     feedPost: FeedPost,
-    onStatisticsClickListener: (StatisticItem) -> Unit
+    onLikeClickListener: (StatisticItem) -> Unit,
+    onShareClickListener: (StatisticItem) -> Unit,
+    onCommentClickListener: (StatisticItem) -> Unit
 ) {
     Card(shape = RoundedCornerShape(4.dp), modifier = modifier) {
         Column(Modifier.padding(8.dp)) {
@@ -50,7 +52,9 @@ fun PostCard(
             Spacer(modifier = Modifier.height(8.dp))
             Statistic(
                 statistics = feedPost.statistics,
-                onItemClickListener = onStatisticsClickListener
+                onLikeClickListener=onLikeClickListener,
+                onShareClickListener=onShareClickListener,
+                onCommentClickListener=onCommentClickListener
             )
         }
     }
@@ -86,7 +90,12 @@ fun PostHeader(feedPost: FeedPost) {
 }
 
 @Composable
-fun Statistic(statistics: List<StatisticItem>, onItemClickListener: (StatisticItem) -> Unit) {
+fun Statistic(
+    statistics: List<StatisticItem>,
+    onLikeClickListener: (StatisticItem) -> Unit,
+    onShareClickListener: (StatisticItem) -> Unit,
+    onCommentClickListener: (StatisticItem) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
@@ -94,21 +103,21 @@ fun Statistic(statistics: List<StatisticItem>, onItemClickListener: (StatisticIt
         ActionButton(
             icon = R.drawable.baseline_favorite_border_24,
             count = likesItem.count.toString(),
-            onItemClickListener = { onItemClickListener(likesItem) }
+            onItemClickListener = { onLikeClickListener(likesItem) }
         )
         Spacer(modifier = Modifier.width(2.dp))
         val commentsItem = statistics.getItemByType(StatisticType.COMMENTS)
         ActionButton(
             icon = R.drawable.baseline_comment_24,
             count = commentsItem.count.toString(),
-            onItemClickListener = { onItemClickListener(commentsItem) }
+            onItemClickListener = { onCommentClickListener(commentsItem) }
         )
         Spacer(modifier = Modifier.width(2.dp))
         val sharesItem = statistics.getItemByType(StatisticType.SHARES)
         ActionButton(
             icon = R.drawable.baseline_send_24,
             count = sharesItem.count.toString(),
-            onItemClickListener = { onItemClickListener(sharesItem) }
+            onItemClickListener = { onShareClickListener(sharesItem) }
         )
         Spacer(Modifier.weight(1f))
         Row {

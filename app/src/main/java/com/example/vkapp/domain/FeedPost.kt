@@ -3,6 +3,7 @@ package com.example.vkapp.domain
 import com.example.vkapp.R
 
 data class FeedPost(
+    val id:Int=0,
     val communityName: String = "/dev/null",
     val publishedDate: String = "14:00",
     val avatarResId: Int = R.drawable.ic_launcher_background,

@@ -1,6 +1,8 @@
 package com.example.vkapp
 
-import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -13,16 +15,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import com.example.vkapp.domain.FeedPost
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Preview(showBackground = true)
 @Composable
-fun MainScreen() {
-
-    val feedPost = remember { mutableStateOf(FeedPost()) }
+fun MainScreen(viewModel: MyViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     Scaffold(bottomBar = {
         NavigationBar(containerColor = MaterialTheme.colorScheme.primary) {
             val selectedItem = remember { mutableStateOf(0) }
@@ -42,20 +47,42 @@ fun MainScreen() {
             }
         }
     }) {
-        PostCard(
-            modifier = Modifier.padding(8.dp),
-            feedPost = feedPost.value,
-            onStatisticsClickListener = { newItem ->
-                feedPost.value = feedPost.value.copy(
-                    statistics = feedPost.value.statistics.map { oldItem ->
-                        if (oldItem.statisticType == newItem.statisticType) {
-                            oldItem.copy(count = oldItem.count + 1)
-                        } else {
-                            oldItem
-                        }
+        val feedPosts = viewModel.feedPosts.observeAsState(listOf())
+
+        LazyColumn(
+            contentPadding = PaddingValues(
+                top = 16.dp, start = 8.dp, end = 8.dp, bottom = it.calculateBottomPadding() + 8.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(items = feedPosts.value, key = { it.id }) { feedPost ->
+                val dismissState = rememberDismissState()
+                if (dismissState.isDismissed(DismissDirection.EndToStart)) {
+                    viewModel.removeFeedPost(feedPost)
+                }
+                SwipeToDismiss(
+                    modifier = Modifier.animateItemPlacement(),
+                    state = dismissState,
+                    directions = setOf(DismissDirection.EndToStart),
+                    background = {},
+                    dismissContent = {
+                        PostCard(
+                            feedPost = feedPost,
+                            onLikeClickListener = { statisticItem ->
+                                viewModel.updateCount(feedPost, statisticItem)
+                            },
+                            onShareClickListener = { statisticItem ->
+                                viewModel.updateCount(feedPost, statisticItem)
+                            },
+                            onCommentClickListener = { statisticItem ->
+                                viewModel.updateCount(feedPost, statisticItem)
+                            }
+                        )
                     }
                 )
             }
-        )
+
+        }
+
     }
 }
