@@ -1,4 +1,4 @@
-package com.example.vkapp
+package com.example.vkapp.ui.theme
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
