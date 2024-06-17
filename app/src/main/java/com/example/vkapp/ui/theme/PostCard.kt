@@ -46,7 +46,7 @@ fun PostCard(
             Spacer(modifier = Modifier.height(8.dp))
             Image(
                 modifier = Modifier.fillMaxWidth(),
-                painter = painterResource(id = feedPost.contentResId),
+                painter = painterResource(id = feedPost.contentImageResId),
                 contentDescription = null,
                 contentScale = ContentScale.Crop
             )
@@ -82,7 +82,7 @@ fun PostHeader(feedPost: FeedPost) {
         ) {
             Text(text = feedPost.communityName)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = feedPost.publishedDate)
+            Text(text = feedPost.publicationDate)
         }
         Icon(
             imageVector = Icons.Rounded.MoreVert, contentDescription = null
@@ -134,7 +134,7 @@ fun Statistic(
 }
 
 private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticItem {
-    return this.find { it.statisticType == type }
+    return this.find { it.type == type }
         ?: throw IllegalStateException("not such type of statisticType")
 }
 

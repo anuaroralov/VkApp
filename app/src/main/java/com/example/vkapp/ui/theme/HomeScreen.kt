@@ -14,25 +14,57 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.vkapp.MyViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.vkapp.NewsFeedViewModel
+import com.example.vkapp.domain.FeedPost
+
+@Composable
+fun HomeScreen(
+    paddingValues: PaddingValues,
+    onCommentClickListener: (FeedPost) -> Unit
+) {
+    val viewModel: NewsFeedViewModel = viewModel()
+    val screenState = viewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
+
+    when (val currentState = screenState.value) {
+        is NewsFeedScreenState.Posts -> {
+            FeedPosts(
+                viewModel = viewModel,
+                paddingValues = paddingValues,
+                posts = currentState.posts,
+                onCommentClickListener = onCommentClickListener
+            )
+        }
+
+        NewsFeedScreenState.Initial -> {
+
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(viewModel: MyViewModel, it: PaddingValues) {
-    val feedPosts = viewModel.feedPosts.observeAsState(listOf())
-
+private fun FeedPosts(
+    viewModel: NewsFeedViewModel,
+    paddingValues: PaddingValues,
+    posts: List<FeedPost>,
+    onCommentClickListener: (FeedPost) -> Unit
+) {
     LazyColumn(
         contentPadding = PaddingValues(
-            top = 16.dp, start = 8.dp, end = 8.dp, bottom = it.calculateBottomPadding() + 8.dp
+            top = 16.dp,
+            start = 8.dp,
+            end = 8.dp,
+            bottom = paddingValues.calculateBottomPadding() + 8.dp
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(items = feedPosts.value, key = { it.id }) { feedPost ->
+        items(items = posts, key = { it.id }) { feedPost ->
             val swipeToDismissBoxState = rememberSwipeToDismissBoxState()
 
             LaunchedEffect(swipeToDismissBoxState.currentValue) {
                 if (swipeToDismissBoxState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-                    viewModel.removeFeedPost(feedPost)
+                    viewModel.remove(feedPost)
                 }
             }
 
@@ -57,8 +89,8 @@ fun HomeScreen(viewModel: MyViewModel, it: PaddingValues) {
                         onShareClickListener = { statisticItem ->
                             viewModel.updateCount(feedPost, statisticItem)
                         },
-                        onCommentClickListener = { statisticItem ->
-                            viewModel.updateCount(feedPost, statisticItem)
+                        onCommentClickListener = {
+                            onCommentClickListener(feedPost)
                         }
                     )
                 }
