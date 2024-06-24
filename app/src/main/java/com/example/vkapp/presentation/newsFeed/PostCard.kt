@@ -1,4 +1,4 @@
-package com.example.vkapp.ui.theme
+package com.example.vkapp.presentation.newsFeed
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

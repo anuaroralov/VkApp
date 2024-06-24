@@ -1,4 +1,4 @@
-package com.example.vkapp
+package com.example.vkapp.presentation.comments
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

@@ -1,4 +1,4 @@
-package com.example.vkapp.ui.theme
+package com.example.vkapp.presentation.comments
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -29,10 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.vkapp.CommentsViewModel
-import com.example.vkapp.CommentsViewModelFactory
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.PostComment
+import com.example.vkapp.ui.theme.VkAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

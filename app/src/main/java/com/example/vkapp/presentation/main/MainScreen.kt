@@ -1,4 +1,4 @@
-package com.example.vkapp.ui.theme
+package com.example.vkapp.presentation.main
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -9,12 +9,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vkapp.navigation.AppNavGraph
 import com.example.vkapp.navigation.NavigationItem
 import com.example.vkapp.navigation.rememberNavigationState
+import com.example.vkapp.presentation.comments.CommentsScreen
+import com.example.vkapp.presentation.newsFeed.NewsFeedScreen
 
 @Preview(showBackground = true)
 @Composable
@@ -38,8 +41,8 @@ fun MainScreen() {
                     onClick = {
                         navigationState.navigateTo(item.screen.route)
                     },
-                    icon = { Icon(item.icon, contentDescription = item.title) },
-                    label = { Text(text = item.title) },
+                    icon = { Icon(item.icon, contentDescription = stringResource(item.title)) },
+                    label = { Text(text = stringResource(item.title)) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.onPrimary,
                         unselectedIconColor = MaterialTheme.colorScheme.onSecondary
@@ -51,7 +54,7 @@ fun MainScreen() {
         AppNavGraph(
             navHostController = navigationState.navHostController,
             newsFeedScreenContent = {
-                HomeScreen(
+                NewsFeedScreen(
                     paddingValues = paddingValues,
                     onCommentClickListener = {
                         navigationState.navigateToComments(it)
