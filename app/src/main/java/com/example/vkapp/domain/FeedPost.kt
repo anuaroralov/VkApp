@@ -3,24 +3,20 @@ package com.example.vkapp.domain
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.navigation.NavType
-import com.example.vkapp.R
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class FeedPost(
-    val id: Int = 0,
-    val communityName: String = "/dev/null",
-    val publicationDate: String = "14:00",
-    val avatarResId: Int = R.drawable.ic_launcher_background,
-    val contentText: String = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    val contentImageResId: Int = R.drawable.ic_launcher_background,
-    val statistics: List<StatisticItem> = listOf(
-        StatisticItem(type = StatisticType.VIEWS, 966),
-        StatisticItem(type = StatisticType.SHARES, 7),
-        StatisticItem(type = StatisticType.COMMENTS, 8),
-        StatisticItem(type = StatisticType.LIKES, 27)
-    )
+    val id: Long,
+    val communityId: Long,
+    val communityName: String,
+    val publicationDate: String,
+    val communityImageUrl: String,
+    val contentText: String,
+    val contentImageUrl: String?,
+    val statistics: List<StatisticItem>,
+    val isLiked: Boolean
 ) : Parcelable {
 
     companion object {

@@ -1,6 +1,5 @@
 package com.example.vkapp.presentation.newsFeed
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.StatisticItem
@@ -39,23 +40,28 @@ fun PostCard(
     onShareClickListener: (StatisticItem) -> Unit,
     onCommentClickListener: (StatisticItem) -> Unit
 ) {
-    Card(shape = RoundedCornerShape(4.dp), modifier = modifier) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier,
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
+    ) {
         Column(Modifier.padding(8.dp)) {
             PostHeader(feedPost)
             Text(text = feedPost.contentText)
             Spacer(modifier = Modifier.height(8.dp))
-            Image(
+            AsyncImage(
+                model = feedPost.contentImageUrl,
                 modifier = Modifier.fillMaxWidth(),
-                painter = painterResource(id = feedPost.contentImageResId),
                 contentDescription = null,
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
             Statistic(
                 statistics = feedPost.statistics,
-                onLikeClickListener=onLikeClickListener,
-                onShareClickListener=onShareClickListener,
-                onCommentClickListener=onCommentClickListener
+                onLikeClickListener = onLikeClickListener,
+                onShareClickListener = onShareClickListener,
+                onCommentClickListener = onCommentClickListener,
+                isFavourite = feedPost.isLiked
             )
         }
     }
@@ -69,8 +75,8 @@ fun PostHeader(feedPost: FeedPost) {
             .fillMaxWidth()
             .padding(bottom = 8.dp)
     ) {
-        Image(
-            painter = painterResource(id = feedPost.avatarResId),
+        AsyncImage(
+            model = feedPost.communityImageUrl,
             contentDescription = null,
             modifier = Modifier
                 .size(50.dp)
@@ -95,29 +101,30 @@ fun Statistic(
     statistics: List<StatisticItem>,
     onLikeClickListener: (StatisticItem) -> Unit,
     onShareClickListener: (StatisticItem) -> Unit,
-    onCommentClickListener: (StatisticItem) -> Unit
+    onCommentClickListener: (StatisticItem) -> Unit,
+    isFavourite: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
         val likesItem = statistics.getItemByType(StatisticType.LIKES)
         ActionButton(
-            icon = R.drawable.baseline_favorite_border_24,
-            count = likesItem.count.toString(),
+            icon = if(isFavourite) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24,
+            count = formatStatisticCount(likesItem.count),
             onItemClickListener = { onLikeClickListener(likesItem) }
         )
         Spacer(modifier = Modifier.width(2.dp))
         val commentsItem = statistics.getItemByType(StatisticType.COMMENTS)
         ActionButton(
             icon = R.drawable.baseline_comment_24,
-            count = commentsItem.count.toString(),
+            count = formatStatisticCount(commentsItem.count),
             onItemClickListener = { onCommentClickListener(commentsItem) }
         )
         Spacer(modifier = Modifier.width(2.dp))
         val sharesItem = statistics.getItemByType(StatisticType.SHARES)
         ActionButton(
             icon = R.drawable.baseline_send_24,
-            count = sharesItem.count.toString(),
+            count = formatStatisticCount(sharesItem.count),
             onItemClickListener = { onShareClickListener(sharesItem) }
         )
         Spacer(Modifier.weight(1f))
@@ -128,8 +135,18 @@ fun Statistic(
                 contentDescription = "Views"
             )
             Spacer(modifier = Modifier.width(2.dp))
-            Text(text = viewsItem.count.toString())
+            Text(text = formatStatisticCount(viewsItem.count))
         }
+    }
+}
+
+private fun formatStatisticCount(count: Int): String {
+    return if (count > 100_000) {
+        String.format("%sK", (count / 1000))
+    } else if (count > 1000) {
+        String.format("%.1fK", (count / 1000f))
+    } else {
+        count.toString()
     }
 }
 
@@ -145,7 +162,7 @@ fun ActionButton(icon: Int, count: String, onItemClickListener: () -> Unit) {
         modifier = Modifier
             .padding(4.dp)
             .clickable { onItemClickListener() },
-        color = MaterialTheme.colorScheme.secondary
+        color = MaterialTheme.colorScheme.background
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
