@@ -7,10 +7,13 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vkapp.navigation.AppNavGraph
@@ -25,7 +28,12 @@ fun MainScreen() {
     val navigationState = rememberNavigationState()
 
     Scaffold(bottomBar = {
-        NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+        NavigationBar(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                0.000000000000000000000000000000000000000000001.dp
+            ),
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ) {
 
             val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
 
@@ -45,8 +53,11 @@ fun MainScreen() {
                     label = { Text(text = stringResource(item.title)) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurface
-                    )
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                        indicatorColor = Color.Transparent
+                    ),
                 )
             }
         }

@@ -23,9 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
@@ -47,7 +50,7 @@ fun PostCard(
     ) {
         Column(Modifier.padding(8.dp)) {
             PostHeader(feedPost)
-            Text(text = feedPost.contentText)
+            Text(text = feedPost.contentText, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(8.dp))
             AsyncImage(
                 model = feedPost.contentImageUrl,
@@ -86,9 +89,13 @@ fun PostHeader(feedPost: FeedPost) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = feedPost.communityName)
+            Text(
+                text = feedPost.communityName,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = feedPost.publicationDate)
+            Text(text = feedPost.publicationDate, fontSize = 14.sp)
         }
         Icon(
             imageVector = Icons.Rounded.MoreVert, contentDescription = null
@@ -109,9 +116,11 @@ fun Statistic(
     ) {
         val likesItem = statistics.getItemByType(StatisticType.LIKES)
         ActionButton(
-            icon = if(isFavourite) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24,
+            icon = if (isFavourite) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24,
             count = formatStatisticCount(likesItem.count),
-            onItemClickListener = { onLikeClickListener(likesItem) }
+            onItemClickListener = { onLikeClickListener(likesItem) },
+            tint = if (isFavourite) Color.Red else Color.Gray,
+            backgroundColor = if (isFavourite) Color(0xFFF2E1E1) else MaterialTheme.colorScheme.background
         )
         Spacer(modifier = Modifier.width(2.dp))
         val commentsItem = statistics.getItemByType(StatisticType.COMMENTS)
@@ -132,10 +141,10 @@ fun Statistic(
             val viewsItem = statistics.getItemByType(StatisticType.VIEWS)
             Icon(
                 painter = painterResource(id = R.drawable.baseline_visibility_24),
-                contentDescription = "Views"
+                contentDescription = "Views", tint = Color.Gray
             )
             Spacer(modifier = Modifier.width(2.dp))
-            Text(text = formatStatisticCount(viewsItem.count))
+            Text(text = formatStatisticCount(viewsItem.count), color = Color.Gray)
         }
     }
 }
@@ -156,13 +165,19 @@ private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticIte
 }
 
 @Composable
-fun ActionButton(icon: Int, count: String, onItemClickListener: () -> Unit) {
+fun ActionButton(
+    icon: Int,
+    count: String,
+    onItemClickListener: () -> Unit,
+    tint: Color = Color.Gray,
+    backgroundColor: Color = MaterialTheme.colorScheme.background
+) {
     Surface(
         shape = RoundedCornerShape(50),
         modifier = Modifier
             .padding(4.dp)
             .clickable { onItemClickListener() },
-        color = MaterialTheme.colorScheme.background
+        color = backgroundColor
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -171,10 +186,10 @@ fun ActionButton(icon: Int, count: String, onItemClickListener: () -> Unit) {
             Icon(
                 painter = painterResource(id = icon),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp), tint = tint
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = count)
+            Text(text = count, color = tint)
         }
     }
 }

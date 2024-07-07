@@ -7,10 +7,17 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    @GET("newsfeed.get?v=5.199")
+    @GET("newsfeed.getRecommended?v=5.199")
     suspend fun loadRecommendations(
         @Query("access_token") token: String
     ): NewsFeedResponseDto
+
+    @GET("newsfeed.getRecommended?v=5.199")
+    suspend fun loadRecommendations(
+        @Query("access_token") token: String,
+        @Query("start_from") startFrom: String
+    ): NewsFeedResponseDto
+
 
     @GET("likes.add?v=5.199&type=post")
     suspend fun addLike(

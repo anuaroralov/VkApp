@@ -1,5 +1,6 @@
 package com.example.vkapp.data.repository
 
+import android.util.Log
 import com.example.vkapp.data.mapper.mapResponseToPosts
 import com.example.vkapp.data.network.ApiFactory.apiService
 import com.example.vkapp.domain.FeedPost
@@ -13,12 +14,24 @@ class NewsFeedRepository() {
     val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
+    private var nextFrom: String? = null
+
     suspend fun loadRecommendations(): List<FeedPost> {
         val token=VKID.instance.accessToken?.token?: throw IllegalStateException("Token is null")
-        val response = apiService.loadRecommendations(token)
+        val startFrom = nextFrom
+
+        if (startFrom == null && feedPosts.isNotEmpty()) return feedPosts
+
+        val response = if (startFrom == null) {
+            apiService.loadRecommendations(token)
+        } else {
+            Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
+            apiService.loadRecommendations(token, startFrom)
+        }
+        nextFrom = response.newsFeedContent.nextFrom
         val posts = response.mapResponseToPosts()
         _feedPosts.addAll(posts)
-        return posts
+        return feedPosts
     }
 
     suspend fun changeLikeStatus(feedPost: FeedPost) {
