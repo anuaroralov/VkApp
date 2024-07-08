@@ -1,5 +1,6 @@
-package com.example.vkapp.presentation.stories
+package com.example.vkapp.presentation.home.stories
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -18,10 +19,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.vkapp.R
 import com.vk.id.VKIDUser
+
+@Preview(showBackground = true)
+@Composable
+fun StoryIcon(itemSize: Dp = 80.dp) {
+    Column(
+        modifier = Modifier
+            .padding(4.dp, 12.dp, 4.dp, 4.dp)
+            .width(itemSize)
+            .background(MaterialTheme.colorScheme.surface),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_background),
+            contentDescription = null,
+            modifier = Modifier
+                .size(itemSize - 8.dp)
+                .clip(CircleShape)
+                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                .border(3.dp, MaterialTheme.colorScheme.onPrimary, CircleShape)
+        )
+        Text("Fsdgs", color = MaterialTheme.colorScheme.primary)
+    }
+}
 
 @Composable
 fun AddStory(itemSize: Dp = 80.dp, user: VKIDUser) {

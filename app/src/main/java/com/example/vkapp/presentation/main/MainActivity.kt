@@ -26,7 +26,9 @@ class MainActivity : ComponentActivity() {
                     val authState = viewModel.authState.observeAsState()
 
                     when (authState.value) {
-                        AuthState.Authorized -> MainScreen()
+                        AuthState.Authorized -> {
+                            MainScreen(viewModel.user.value)
+                        }
 
                         AuthState.NotAuthorized -> {
                             AuthScreen(viewModel)

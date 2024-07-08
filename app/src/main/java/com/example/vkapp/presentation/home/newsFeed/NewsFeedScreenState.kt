@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.newsFeed
+package com.example.vkapp.presentation.home.newsFeed
 
 import com.example.vkapp.domain.FeedPost
 

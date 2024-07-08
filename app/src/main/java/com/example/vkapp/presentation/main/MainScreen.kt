@@ -12,57 +12,57 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vkapp.navigation.AppNavGraph
 import com.example.vkapp.navigation.NavigationItem
+import com.example.vkapp.navigation.Screen
 import com.example.vkapp.navigation.rememberNavigationState
-import com.example.vkapp.presentation.comments.CommentsScreen
 import com.example.vkapp.presentation.home.HomeScreen
+import com.example.vkapp.presentation.home.comments.CommentsScreen
+import com.vk.id.VKIDUser
 
-@Preview(showBackground = true)
 @Composable
-fun MainScreen() {
+fun MainScreen(user: VKIDUser?) {
     val navigationState = rememberNavigationState()
-    val viewModel: MainViewModel = viewModel()
-    Scaffold(bottomBar = {
-        NavigationBar(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                0.000000000000000000000000000000000000000000001.dp
-            ),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
+    val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
 
-            val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
+    val showBottomBar = navBackStackEntry?.destination?.route != Screen.Comments.route
 
-            val items =
-                listOf(NavigationItem.Home, NavigationItem.Favourite, NavigationItem.Profile)
-            items.forEach { item ->
-                val selected = navBackStackEntry?.destination?.hierarchy?.any {
-                    it.route == item.screen.route
-                } ?: false
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(0.dp),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ) {
+                    val items = listOf(NavigationItem.Home, NavigationItem.Favourite, NavigationItem.Profile)
+                    items.forEach { item ->
+                        val selected = navBackStackEntry?.destination?.hierarchy?.any {
+                            it.route == item.screen.route
+                        } ?: false
 
-                NavigationBarItem(
-                    selected = selected,
-                    onClick = {
-                        navigationState.navigateTo(item.screen.route)
-                    },
-                    icon = { Icon(item.icon, contentDescription = stringResource(item.title)) },
-                    label = { Text(text = stringResource(item.title)) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                        indicatorColor = Color.Transparent
-                    ),
-                )
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navigationState.navigateTo(item.screen.route)
+                            },
+                            icon = { Icon(item.icon, contentDescription = stringResource(item.title)) },
+                            label = { Text(text = stringResource(item.title)) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                indicatorColor = Color.Transparent
+                            ),
+                        )
+                    }
+                }
             }
         }
-    }) { paddingValues ->
+    ) { paddingValues ->
         AppNavGraph(
             navHostController = navigationState.navHostController,
             newsFeedScreenContent = {
@@ -70,7 +70,8 @@ fun MainScreen() {
                     paddingValues = paddingValues,
                     onCommentClickListener = {
                         navigationState.navigateToComments(it)
-                    },viewModel.user.value
+                    },
+                    user = user
                 )
             },
             commentsScreenContent = { feedPost ->

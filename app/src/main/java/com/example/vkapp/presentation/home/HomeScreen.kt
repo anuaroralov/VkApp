@@ -26,11 +26,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.domain.FeedPost
-import com.example.vkapp.presentation.newsFeed.FeedPostItem
-import com.example.vkapp.presentation.newsFeed.NewsFeedScreenState
-import com.example.vkapp.presentation.newsFeed.NewsFeedViewModel
-import com.example.vkapp.presentation.stories.AddStory
-import com.example.vkapp.presentation.stories.StoryIcon
+import com.example.vkapp.presentation.home.newsFeed.FeedPostItem
+import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
+import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModel
+import com.example.vkapp.presentation.home.stories.AddStory
+import com.example.vkapp.presentation.home.stories.StoryIcon
 import com.vk.id.VKIDUser
 
 @Composable
@@ -39,8 +39,9 @@ fun HomeScreen(
     onCommentClickListener: (FeedPost) -> Unit,
     user: VKIDUser?
 ) {
-    val viewModel: NewsFeedViewModel = viewModel()
-    val screenState = viewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
+    val newsFeedViewModel: NewsFeedViewModel = viewModel()
+    val screenState = newsFeedViewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
+
     LazyColumn(
         contentPadding = PaddingValues(
             top = 0.dp,
@@ -60,8 +61,8 @@ fun HomeScreen(
                     shape = RoundedCornerShape(0.dp, 0.dp, 12.dp, 12.dp)
                 ) {
                     LazyRow {
-                        if(user!=null){
-                            item{
+                        if (user != null) {
+                            item {
                                 AddStory(user = user)
                             }
                         }
@@ -79,7 +80,7 @@ fun HomeScreen(
                 items(items = currentState.posts, key = { (it.id) }) { feedPost ->
                     FeedPostItem(
                         feedPost = feedPost,
-                        viewModel = viewModel,
+                        viewModel = newsFeedViewModel,
                         onCommentClickListener = onCommentClickListener
                     )
                 }
@@ -97,7 +98,7 @@ fun HomeScreen(
                         }
                     } else {
                         SideEffect {
-                            viewModel.loadNextRecommendations()
+                            newsFeedViewModel.loadNextRecommendations()
                         }
                     }
                 }

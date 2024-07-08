@@ -14,7 +14,7 @@ data class FeedPost(
     val publicationDate: String,
     val communityImageUrl: String,
     val contentText: String,
-    val contentImageUrl: String?,
+    val contentImageUrls: List<String>?,
     val statistics: List<StatisticItem>,
     val isLiked: Boolean
 ) : Parcelable {

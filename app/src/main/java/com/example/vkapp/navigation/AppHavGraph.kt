@@ -1,5 +1,9 @@
 package com.example.vkapp.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,7 +29,11 @@ fun AppNavGraph(
             startDestination = Screen.NewsFeed.route,
             route = Screen.Home.route
         ) {
-            composable(Screen.NewsFeed.route) {
+            composable(
+                Screen.NewsFeed.route,
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None }
+            ) {
                 newsFeedScreenContent()
             }
             composable(
@@ -34,18 +42,51 @@ fun AppNavGraph(
                     navArgument(KEY_FEED_POST) {
                         type = FeedPost.NavigationType
                     }
-                )
+                ),
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Up,
+                        animationSpec = tween(700)
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Down,
+                        animationSpec = tween(700)
+                    )
+                },
+                popEnterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Up,
+                        animationSpec = tween(700)
+                    )
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Down,
+                        animationSpec = tween(700)
+                    )
+                }
             ) {
                 val feedPost = it.arguments?.getParcelable<FeedPost>(KEY_FEED_POST)
                     ?: throw RuntimeException("Args is null")
                 commentsScreenContent(feedPost)
             }
         }
-        composable(Screen.Favourite.route) {
+        composable(
+            Screen.Favourite.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             favouriteScreenContent()
         }
-        composable(Screen.Profile.route) {
+        composable(
+            Screen.Profile.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             profileScreenContent()
         }
     }
 }
+

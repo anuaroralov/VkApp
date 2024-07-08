@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.newsFeed
+package com.example.vkapp.presentation.home.newsFeed
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api

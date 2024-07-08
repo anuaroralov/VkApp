@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.comments
+package com.example.vkapp.presentation.home.comments
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -30,4 +30,16 @@ class CommentsViewModel(
             )
         }
     }
+
+//    fun addComment(feedPost: FeedPost, comment: String) {
+//        viewModelScope.launch {
+//            val newComment = repository.addComment(feedPost, comment)
+//            val currentState = _screenState.value
+//            if (currentState is CommentsScreenState.Comments) {
+//                _screenState.value = currentState.copy(
+//                    comments = currentState.comments + newComment
+//                )
+//            }
+//        }
+//    }
 }

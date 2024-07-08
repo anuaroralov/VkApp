@@ -22,7 +22,8 @@ class NavigationState(
     }
 
     fun navigateToComments(feedPost: FeedPost) {
-        navHostController.navigate(Screen.Comments.getRouteWithArgs(feedPost))
+        navHostController.navigate(Screen.Comments.getRouteWithArgs(feedPost)) {
+        }
     }
 }
 

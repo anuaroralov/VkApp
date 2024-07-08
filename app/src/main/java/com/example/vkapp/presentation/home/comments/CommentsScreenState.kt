@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.comments
+package com.example.vkapp.presentation.home.comments
 
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.PostComment

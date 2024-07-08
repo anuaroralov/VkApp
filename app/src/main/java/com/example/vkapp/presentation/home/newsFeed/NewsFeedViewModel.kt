@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.newsFeed
+package com.example.vkapp.presentation.home.newsFeed
 
 import android.util.Log
 import androidx.lifecycle.LiveData

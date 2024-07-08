@@ -20,12 +20,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _authState = MutableLiveData<AuthState>(AuthState.Initial)
     val authState: LiveData<AuthState> = _authState
 
-    private val _user=MutableLiveData<VKIDUser>()
-    val user:LiveData<VKIDUser> = _user
+    private val _user = MutableLiveData<VKIDUser>()
+    val user: LiveData<VKIDUser> = _user
 
     init {
         checkAuthorization()
-        getUserInfo()
     }
 
     private fun checkAuthorization() {
@@ -37,9 +36,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (accessTokenIsExpired()) {
                 Log.d("MainViewModel", "123")
                 refreshAccessToken()
-            } else {
-                _authState.value = AuthState.Authorized
             }
+            getUserInfo()
         } else {
             _authState.value = AuthState.NotAuthorized
         }
@@ -52,73 +50,60 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getUserInfo() {
         viewModelScope.launch() {
-            try {
-                VKID.instance.getUserData(
-                    callback = object : VKIDGetUserCallback {
-                        override fun onFail(fail: VKIDGetUserFail) {
-                            when (fail) {
-                                is VKIDGetUserFail.FailedApiCall -> TODO()
-                                is VKIDGetUserFail.IdTokenTokenExpired -> TODO()
-                                is VKIDGetUserFail.NotAuthenticated -> TODO()
-                            }
-                        }
-
-                        override fun onSuccess(user: VKIDUser) {
-                            Log.d("MainViewModel", "user=$user")
-                            _user.value = user
-                        }
+            VKID.instance.getUserData(callback = object : VKIDGetUserCallback {
+                override fun onFail(fail: VKIDGetUserFail) {
+                    when (fail) {
+                        is VKIDGetUserFail.FailedApiCall -> TODO()
+                        is VKIDGetUserFail.IdTokenTokenExpired -> TODO()
+                        is VKIDGetUserFail.NotAuthenticated -> TODO()
                     }
-                )
-            } catch (e: Exception) {
+                }
 
-            }
+                override fun onSuccess(user: VKIDUser) {
+                    Log.d("MainViewModel", "user=$user")
+                    _user.value = user
+                    _authState.value = AuthState.Authorized
+                }
+            })
+
         }
     }
 
-
     private fun accessTokenIsExpired(): Boolean {
-        val isExpired: Boolean
-        if (VKID.instance.accessToken?.expireTime!! < System.currentTimeMillis()) {
-            isExpired = true
-        } else {
-            isExpired = false
-        }
+        val isExpired: Boolean =
+            VKID.instance.accessToken?.expireTime!! < System.currentTimeMillis()
         return isExpired
     }
 
     private fun refreshAccessToken() {
-        viewModelScope.launch {
-            VKID.instance.refreshToken(
-                callback = object : VKIDRefreshTokenCallback {
-                    override fun onSuccess(token: AccessToken) {
-                        Log.d("MainViewModel", "token after refresh=${token}")
-                        _authState.value = AuthState.Authorized
-                    }
+        viewModelScope.launch() {
+            VKID.instance.refreshToken(callback = object : VKIDRefreshTokenCallback {
+                override fun onSuccess(token: AccessToken) {
+                    Log.d("MainViewModel", "token after refresh=${token}")
+                }
 
-                    override fun onFail(fail: VKIDRefreshTokenFail) {
-                        when (fail) {
-                            is VKIDRefreshTokenFail.FailedApiCall -> {
-                                Log.e("MainViewModel", "API Call Failed: ${fail.description}")
-                            }
+                override fun onFail(fail: VKIDRefreshTokenFail) {
+                    when (fail) {
+                        is VKIDRefreshTokenFail.FailedApiCall -> {
+                            Log.e("MainViewModel", "API Call Failed: ${fail.description}")
+                        }
 
-                            is VKIDRefreshTokenFail.RefreshTokenExpired -> {
-                                _authState.value = AuthState.NotAuthorized
-                                Log.e("MainViewModel", "Refresh Token Expired ")
-                            }
+                        is VKIDRefreshTokenFail.RefreshTokenExpired -> {
+                            _authState.value = AuthState.NotAuthorized
+                            Log.e("MainViewModel", "Refresh Token Expired ")
+                        }
 
-                            is VKIDRefreshTokenFail.FailedOAuthState -> {
-                                Log.e("MainViewModel", "OAuthState Failed: ${fail.description}")
-                            }
+                        is VKIDRefreshTokenFail.FailedOAuthState -> {
+                            Log.e("MainViewModel", "OAuthState Failed: ${fail.description}")
+                        }
 
-                            is VKIDRefreshTokenFail.NotAuthenticated -> {
-                                _authState.value = AuthState.NotAuthorized
-                                Log.e("MainViewModel", "User Unauthorized")
-                            }
+                        is VKIDRefreshTokenFail.NotAuthenticated -> {
+                            _authState.value = AuthState.NotAuthorized
+                            Log.e("MainViewModel", "User Unauthorized")
                         }
                     }
                 }
-            )
+            })
         }
     }
-
 }

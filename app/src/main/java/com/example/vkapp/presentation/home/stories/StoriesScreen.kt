@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.stories
+package com.example.vkapp.presentation.home.stories
 
 import android.net.Uri
 import androidx.compose.animation.core.Animatable
@@ -25,7 +25,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Composable
-fun InstagramStory() {
+fun StoriesScreen() {
     val images = remember {
         listOf(
             R.drawable.ic_launcher_background,

@@ -1,6 +1,9 @@
-package com.example.vkapp.presentation.newsFeed
+package com.example.vkapp.presentation.home.newsFeed
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -52,12 +57,9 @@ fun PostCard(
             PostHeader(feedPost)
             Text(text = feedPost.contentText, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(8.dp))
-            AsyncImage(
-                model = feedPost.contentImageUrl,
-                modifier = Modifier.fillMaxWidth(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop
-            )
+            if (feedPost.contentImageUrls!=null){
+                ImagePager(imageUrls =feedPost.contentImageUrls)
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Statistic(
                 statistics = feedPost.statistics,
@@ -65,6 +67,36 @@ fun PostCard(
                 onShareClickListener = onShareClickListener,
                 onCommentClickListener = onCommentClickListener,
                 isFavourite = feedPost.isLiked
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ImagePager(
+    imageUrls: List<String>
+) {
+    val pagerState = rememberPagerState(pageCount = { imageUrls.size })
+
+    Box {
+        HorizontalPager(state = pagerState) { page ->
+            AsyncImage(
+                model = imageUrls[page],
+                modifier = Modifier.fillMaxWidth(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+        }
+        if(imageUrls.size>1){
+            Text(
+                text = "${pagerState.currentPage + 1}/${pagerState.pageCount}",
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             )
         }
     }

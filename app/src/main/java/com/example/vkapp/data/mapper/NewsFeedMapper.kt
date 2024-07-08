@@ -34,7 +34,8 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(): List<FeedPost> {
             publicationDate = mapTimestampToDate(post.date),
             communityImageUrl = group.imageUrl,
             contentText = contentText,
-            contentImageUrl = post.attachments?.firstOrNull()?.photo?.photoUrls?.lastOrNull()?.url,
+            contentImageUrls = post.attachments?.mapNotNull { attachment ->
+            attachment.photo?.photoUrls?.lastOrNull()?.url },
             statistics = listOf(
                 StatisticItem(type = StatisticType.LIKES, post.likes.count),
                 StatisticItem(type = StatisticType.VIEWS, post.views.count),
