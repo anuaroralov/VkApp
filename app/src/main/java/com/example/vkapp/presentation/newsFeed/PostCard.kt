@@ -120,7 +120,7 @@ fun Statistic(
             count = formatStatisticCount(likesItem.count),
             onItemClickListener = { onLikeClickListener(likesItem) },
             tint = if (isFavourite) Color.Red else Color.Gray,
-            backgroundColor = if (isFavourite) Color(0xFFF2E1E1) else MaterialTheme.colorScheme.background
+            backgroundColor = if (isFavourite) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.background
         )
         Spacer(modifier = Modifier.width(2.dp))
         val commentsItem = statistics.getItemByType(StatisticType.COMMENTS)

@@ -1,6 +1,6 @@
 package com.example.vkapp.presentation.comments
 
-import androidx.compose.foundation.Image
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,16 +26,18 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.PostComment
-import com.example.vkapp.ui.theme.VkAppTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CommentsScreen(
     onBackPressed: () -> Unit,
@@ -50,7 +54,7 @@ fun CommentsScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(text = "Comments for FeedPost Id: ${currentState.feedPost.contentText}")
+                        Text(text = stringResource(R.string.comments_title))
                     },
                     navigationIcon = {
                         IconButton(onClick = { onBackPressed() }) {
@@ -95,15 +99,17 @@ private fun CommentItem(
                 vertical = 4.dp
             )
     ) {
-        Image(
-            modifier = Modifier.size(24.dp),
-            painter = painterResource(id = comment.authorAvatarId),
+        AsyncImage(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape),
+            model = comment.authorAvatarUrl,
             contentDescription = null
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
-                text = "${comment.authorName} CommentId: ${comment.id}",
+                text = comment.authorName,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 12.sp
             )
@@ -123,10 +129,3 @@ private fun CommentItem(
     }
 }
 
-@Preview
-@Composable
-private fun PreviewComment() {
-    VkAppTheme {
-        CommentItem(comment = PostComment(id = 0))
-    }
-}

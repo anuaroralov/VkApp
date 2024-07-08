@@ -29,12 +29,15 @@ import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.presentation.newsFeed.FeedPostItem
 import com.example.vkapp.presentation.newsFeed.NewsFeedScreenState
 import com.example.vkapp.presentation.newsFeed.NewsFeedViewModel
+import com.example.vkapp.presentation.stories.AddStory
 import com.example.vkapp.presentation.stories.StoryIcon
+import com.vk.id.VKIDUser
 
 @Composable
 fun HomeScreen(
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit,
+    user: VKIDUser?
 ) {
     val viewModel: NewsFeedViewModel = viewModel()
     val screenState = viewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
@@ -57,6 +60,12 @@ fun HomeScreen(
                     shape = RoundedCornerShape(0.dp, 0.dp, 12.dp, 12.dp)
                 ) {
                     LazyRow {
+                        if(user!=null){
+                            item{
+                                AddStory(user = user)
+                            }
+                        }
+
                         items(10) {
                             StoryIcon(itemSize = itemSize)
                             Spacer(modifier = Modifier.width(6.dp))

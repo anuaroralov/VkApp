@@ -1,9 +1,11 @@
 package com.example.vkapp.data.repository
 
 import android.util.Log
+import com.example.vkapp.data.mapper.mapResponseToComments
 import com.example.vkapp.data.mapper.mapResponseToPosts
 import com.example.vkapp.data.network.ApiFactory.apiService
 import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.PostComment
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
 import com.vk.id.VKID
@@ -57,5 +59,15 @@ class NewsFeedRepository() {
         val newPost = feedPost.copy(statistics = newStatistics, isLiked = !feedPost.isLiked)
         val postIndex = _feedPosts.indexOf(feedPost)
         _feedPosts[postIndex] = newPost
+    }
+
+    suspend fun getComments(feedPost: FeedPost): List<PostComment> {
+        val token=VKID.instance.accessToken?.token?: throw IllegalStateException("Token is null")
+        val comments = apiService.getComments(
+            accessToken = token,
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+        return comments.mapResponseToComments()
     }
 }

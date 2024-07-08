@@ -8,16 +8,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vk.id.AccessToken
 import com.vk.id.VKID
+import com.vk.id.VKIDUser
 import com.vk.id.refresh.VKIDRefreshTokenCallback
 import com.vk.id.refresh.VKIDRefreshTokenFail
+import com.vk.id.refreshuser.VKIDGetUserCallback
+import com.vk.id.refreshuser.VKIDGetUserFail
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
+
     private val _authState = MutableLiveData<AuthState>(AuthState.Initial)
     val authState: LiveData<AuthState> = _authState
 
+    private val _user=MutableLiveData<VKIDUser>()
+    val user:LiveData<VKIDUser> = _user
+
     init {
         checkAuthorization()
+        getUserInfo()
     }
 
     private fun checkAuthorization() {
@@ -41,6 +49,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _authState.value = AuthState.Authorized
         Log.d("MainViewModel", "token=${VKID.instance.accessToken?.token}")
     }
+
+    private fun getUserInfo() {
+        viewModelScope.launch() {
+            try {
+                VKID.instance.getUserData(
+                    callback = object : VKIDGetUserCallback {
+                        override fun onFail(fail: VKIDGetUserFail) {
+                            when (fail) {
+                                is VKIDGetUserFail.FailedApiCall -> TODO()
+                                is VKIDGetUserFail.IdTokenTokenExpired -> TODO()
+                                is VKIDGetUserFail.NotAuthenticated -> TODO()
+                            }
+                        }
+
+                        override fun onSuccess(user: VKIDUser) {
+                            Log.d("MainViewModel", "user=$user")
+                            _user.value = user
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
 
     private fun accessTokenIsExpired(): Boolean {
         val isExpired: Boolean

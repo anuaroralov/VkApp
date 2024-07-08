@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vkapp.navigation.AppNavGraph
@@ -26,7 +27,7 @@ import com.example.vkapp.presentation.home.HomeScreen
 @Composable
 fun MainScreen() {
     val navigationState = rememberNavigationState()
-
+    val viewModel: MainViewModel = viewModel()
     Scaffold(bottomBar = {
         NavigationBar(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
@@ -69,7 +70,7 @@ fun MainScreen() {
                     paddingValues = paddingValues,
                     onCommentClickListener = {
                         navigationState.navigateToComments(it)
-                    }
+                    },viewModel.user.value
                 )
             },
             commentsScreenContent = { feedPost ->
