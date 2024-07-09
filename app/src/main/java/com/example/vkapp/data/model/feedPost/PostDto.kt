@@ -3,7 +3,7 @@ package com.example.vkapp.data.model.feedPost
 import com.google.gson.annotations.SerializedName
 
 data class PostDto(
-    @SerializedName("post_id") val id: Long?,
+    @SerializedName("post_id") val id: Long,
     @SerializedName("source_id") val communityId: Long,
     @SerializedName("text") val text: String?,
     @SerializedName("date") val date: Long,

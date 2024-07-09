@@ -1,4 +1,4 @@
-package com.example.vkapp.presentation.utils
+package com.example.vkapp.presentation.home.newsFeed
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

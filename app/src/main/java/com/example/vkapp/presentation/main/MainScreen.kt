@@ -87,7 +87,7 @@ fun MainScreen(user: VKIDUser?) {
                         navigationState.navigateToComments(it)
                     },
                     onLinkClickListener = { url ->
-                        OpenUrl(url, context = context1)
+                        openUrl(url, context = context1)
                     },
                     user = user
                 )
@@ -107,7 +107,7 @@ fun MainScreen(user: VKIDUser?) {
 }
 
 
-fun OpenUrl(url: String, context: Context) {
+fun openUrl(url: String, context: Context) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     context.startActivity(intent)
 }

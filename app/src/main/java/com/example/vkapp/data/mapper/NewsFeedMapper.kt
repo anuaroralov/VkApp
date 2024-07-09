@@ -23,23 +23,16 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(): List<FeedPost> {
     for (post in posts) {
         val group = groups.find { it.id == post.communityId.absoluteValue }
 
-        // Проверка, что group, post.id, и post.likes не null
-        if (group == null || post.id == null || post.likes == null) {
+        // Проверка, что group, post.id не null
+        if (group == null || post.id == null ) {
             continue
         }
 
-        var isLiked = false
-        var likesCount: Int? = null
-        if (post.likes.canLike == 1) {
-            isLiked = (post.likes.userLikes > 0)
-            likesCount = post.likes.count
-        }
+        val isLiked = (post.likes?.userLikes!! > 0)
 
-        val commentsCount = if (post.comments?.canPost == 1) {
-            post.comments.count
-        } else {
-            null
-        }
+        val commentsCount = if (post.comments?.canView == 1) post.comments.count
+            else null
+
 
         val contentText = post.text
 
@@ -84,9 +77,9 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(): List<FeedPost> {
             contentVideos = contentVideos,
             contentLinks = contentLinks,
             statistics = listOf(
-                StatisticItem(type = StatisticType.LIKES, likesCount),
-                StatisticItem(type = StatisticType.VIEWS, post.views?.count ?: null),
-                StatisticItem(type = StatisticType.SHARES, post.reposts?.count ?: null),
+                StatisticItem(type = StatisticType.LIKES, post.likes?.count),
+                StatisticItem(type = StatisticType.VIEWS, post.views?.count),
+                StatisticItem(type = StatisticType.SHARES, post.reposts?.count),
                 StatisticItem(type = StatisticType.COMMENTS, commentsCount)
             ),
             isLiked = isLiked
