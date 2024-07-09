@@ -55,7 +55,7 @@ class NewsFeedViewModel : ViewModel() {
         val newStatistics = oldStatistics.toMutableList().apply {
             replaceAll { oldItem ->
                 if (oldItem.type == item.type) {
-                    oldItem.copy(count = oldItem.count + 1)
+                    oldItem.copy(count = oldItem.count?.plus(1))
                 } else {
                     oldItem
                 }

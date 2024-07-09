@@ -1,9 +1,6 @@
 package com.example.vkapp.presentation.home.newsFeed
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,8 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,6 +33,9 @@ import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
+import com.example.vkapp.presentation.utils.ImagePager
+import com.example.vkapp.presentation.utils.LinkCard
+import com.example.vkapp.presentation.utils.VideoCard
 
 @Composable
 fun PostCard(
@@ -46,7 +43,8 @@ fun PostCard(
     feedPost: FeedPost,
     onLikeClickListener: (StatisticItem) -> Unit,
     onShareClickListener: (StatisticItem) -> Unit,
-    onCommentClickListener: (StatisticItem) -> Unit
+    onCommentClickListener: (StatisticItem) -> Unit,
+    onLinkClickListener: (String) -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -55,12 +53,28 @@ fun PostCard(
     ) {
         Column(Modifier.padding(8.dp)) {
             PostHeader(feedPost)
-            Text(text = feedPost.contentText, color = MaterialTheme.colorScheme.onBackground)
-            Spacer(modifier = Modifier.height(8.dp))
-            if (feedPost.contentImageUrls!=null){
-                ImagePager(imageUrls =feedPost.contentImageUrls)
+            if (feedPost.contentText != null) {
+                Text(text = feedPost.contentText, color = MaterialTheme.colorScheme.onBackground)
+                Spacer(modifier = Modifier.height(8.dp))
             }
+
+            if (feedPost.contentImageUrls != null) {
+                ImagePager(imageUrls = feedPost.contentImageUrls)
+            }
+
+            if (feedPost.contentVideos != null) {
+                feedPost.contentVideos.forEach { video ->
+                    VideoCard(video = video)
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
+
+            feedPost.contentLinks?.forEach { link ->
+                LinkCard(link = link, onLinkClickListener = onLinkClickListener)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Statistic(
                 statistics = feedPost.statistics,
                 onLikeClickListener = onLikeClickListener,
@@ -72,35 +86,6 @@ fun PostCard(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ImagePager(
-    imageUrls: List<String>
-) {
-    val pagerState = rememberPagerState(pageCount = { imageUrls.size })
-
-    Box {
-        HorizontalPager(state = pagerState) { page ->
-            AsyncImage(
-                model = imageUrls[page],
-                modifier = Modifier.fillMaxWidth(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop
-            )
-        }
-        if(imageUrls.size>1){
-            Text(
-                text = "${pagerState.currentPage + 1}/${pagerState.pageCount}",
-                color = Color.White,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun PostHeader(feedPost: FeedPost) {
@@ -147,36 +132,44 @@ fun Statistic(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
         val likesItem = statistics.getItemByType(StatisticType.LIKES)
-        ActionButton(
-            icon = if (isFavourite) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24,
-            count = formatStatisticCount(likesItem.count),
-            onItemClickListener = { onLikeClickListener(likesItem) },
-            tint = if (isFavourite) Color.Red else Color.Gray,
-            backgroundColor = if (isFavourite) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.background
-        )
-        Spacer(modifier = Modifier.width(2.dp))
-        val commentsItem = statistics.getItemByType(StatisticType.COMMENTS)
-        ActionButton(
-            icon = R.drawable.baseline_comment_24,
-            count = formatStatisticCount(commentsItem.count),
-            onItemClickListener = { onCommentClickListener(commentsItem) }
-        )
-        Spacer(modifier = Modifier.width(2.dp))
-        val sharesItem = statistics.getItemByType(StatisticType.SHARES)
-        ActionButton(
-            icon = R.drawable.baseline_send_24,
-            count = formatStatisticCount(sharesItem.count),
-            onItemClickListener = { onShareClickListener(sharesItem) }
-        )
-        Spacer(Modifier.weight(1f))
-        Row {
-            val viewsItem = statistics.getItemByType(StatisticType.VIEWS)
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_visibility_24),
-                contentDescription = "Views", tint = Color.Gray
+        if (likesItem.count != null) {
+            ActionButton(
+                icon = if (isFavourite) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24,
+                count = formatStatisticCount(likesItem.count),
+                onItemClickListener = { onLikeClickListener(likesItem) },
+                tint = if (isFavourite) Color.Red else Color.Gray,
+                backgroundColor = if (isFavourite) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.background
             )
             Spacer(modifier = Modifier.width(2.dp))
-            Text(text = formatStatisticCount(viewsItem.count), color = Color.Gray)
+        }
+
+        val commentsItem = statistics.getItemByType(StatisticType.COMMENTS)
+        if (commentsItem.count != null) {
+            ActionButton(icon = R.drawable.baseline_comment_24,
+                count = formatStatisticCount(commentsItem.count),
+                onItemClickListener = { onCommentClickListener(commentsItem) })
+            Spacer(modifier = Modifier.width(2.dp))
+        }
+
+        val sharesItem = statistics.getItemByType(StatisticType.SHARES)
+        if (sharesItem.count != null) {
+            ActionButton(icon = R.drawable.baseline_send_24,
+                count = formatStatisticCount(sharesItem.count),
+                onItemClickListener = { onShareClickListener(sharesItem) })
+            Spacer(Modifier.weight(1f))
+        }
+
+        Row {
+            val viewsItem = statistics.getItemByType(StatisticType.VIEWS)
+            if (viewsItem.count != null) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_visibility_24),
+                    contentDescription = "Views",
+                    tint = Color.Gray
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(text = formatStatisticCount(viewsItem.count), color = Color.Gray)
+            }
         }
     }
 }
@@ -218,7 +211,8 @@ fun ActionButton(
             Icon(
                 painter = painterResource(id = icon),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp), tint = tint
+                modifier = Modifier.size(24.dp),
+                tint = tint
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(text = count, color = tint)

@@ -1,7 +1,7 @@
-package com.example.vkapp.data.model
+package com.example.vkapp.data.model.feedPost
 
 import com.google.gson.annotations.SerializedName
 
-data class ViewsDto(
+data class RepostsDto(
     @SerializedName("count") val count: Int
 )

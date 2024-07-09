@@ -96,7 +96,7 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
-    implementation (libs.accompanist.systemuicontroller)
+    implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
@@ -106,9 +106,12 @@ dependencies {
 
     implementation(libs.coil.compose)
 
-    implementation (libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer)
     // ExoPlayer UI
-    implementation (libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.ui)
+
+    implementation ("androidx.webkit:webkit:1.11.0")
+
 
 }
 

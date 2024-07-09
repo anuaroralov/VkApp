@@ -45,25 +45,25 @@ fun AppNavGraph(
                 ),
                 enterTransition = {
                     slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Up,
+                        AnimatedContentTransitionScope.SlideDirection.Right,
                         animationSpec = tween(700)
                     )
                 },
                 exitTransition = {
                     slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Down,
+                        AnimatedContentTransitionScope.SlideDirection.Right,
                         animationSpec = tween(700)
                     )
                 },
                 popEnterTransition = {
                     slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Up,
+                        AnimatedContentTransitionScope.SlideDirection.Left,
                         animationSpec = tween(700)
                     )
                 },
                 popExitTransition = {
                     slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Down,
+                        AnimatedContentTransitionScope.SlideDirection.Left,
                         animationSpec = tween(700)
                     )
                 }

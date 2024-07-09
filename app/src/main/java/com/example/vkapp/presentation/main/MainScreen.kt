@@ -1,5 +1,8 @@
 package com.example.vkapp.presentation.main
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -11,6 +14,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -30,6 +34,8 @@ fun MainScreen(user: VKIDUser?) {
 
     val showBottomBar = navBackStackEntry?.destination?.route != Screen.Comments.route
 
+    val context1 = LocalContext.current
+
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
@@ -37,7 +43,11 @@ fun MainScreen(user: VKIDUser?) {
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(0.dp),
                     contentColor = MaterialTheme.colorScheme.onSurface
                 ) {
-                    val items = listOf(NavigationItem.Home, NavigationItem.Favourite, NavigationItem.Profile)
+                    val items = listOf(
+                        NavigationItem.Home,
+                        NavigationItem.Favourite,
+                        NavigationItem.Profile
+                    )
                     items.forEach { item ->
                         val selected = navBackStackEntry?.destination?.hierarchy?.any {
                             it.route == item.screen.route
@@ -48,7 +58,12 @@ fun MainScreen(user: VKIDUser?) {
                             onClick = {
                                 navigationState.navigateTo(item.screen.route)
                             },
-                            icon = { Icon(item.icon, contentDescription = stringResource(item.title)) },
+                            icon = {
+                                Icon(
+                                    item.icon,
+                                    contentDescription = stringResource(item.title)
+                                )
+                            },
                             label = { Text(text = stringResource(item.title)) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -71,6 +86,9 @@ fun MainScreen(user: VKIDUser?) {
                     onCommentClickListener = {
                         navigationState.navigateToComments(it)
                     },
+                    onLinkClickListener = { url ->
+                        OpenUrl(url, context = context1)
+                    },
                     user = user
                 )
             },
@@ -87,3 +105,10 @@ fun MainScreen(user: VKIDUser?) {
         )
     }
 }
+
+
+fun OpenUrl(url: String, context: Context) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    context.startActivity(intent)
+}
+

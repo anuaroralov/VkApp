@@ -37,6 +37,7 @@ import com.vk.id.VKIDUser
 fun HomeScreen(
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit,
+    onLinkClickListener: (String) -> Unit,
     user: VKIDUser?
 ) {
     val newsFeedViewModel: NewsFeedViewModel = viewModel()
@@ -63,7 +64,7 @@ fun HomeScreen(
                     LazyRow {
                         if (user != null) {
                             item {
-                                AddStory(user = user)
+                                AddStory(user = user, itemSize = itemSize)
                             }
                         }
 
@@ -77,11 +78,12 @@ fun HomeScreen(
         }
         when (val currentState = screenState.value) {
             is NewsFeedScreenState.Posts -> {
-                items(items = currentState.posts, key = { (it.id) }) { feedPost ->
+                items(items = currentState.posts, key = { it.id }) { feedPost ->
                     FeedPostItem(
                         feedPost = feedPost,
                         viewModel = newsFeedViewModel,
-                        onCommentClickListener = onCommentClickListener
+                        onCommentClickListener = onCommentClickListener,
+                        onLinkClickListener = onLinkClickListener
                     )
                 }
 

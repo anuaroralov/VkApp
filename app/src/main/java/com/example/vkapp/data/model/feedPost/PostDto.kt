@@ -1,4 +1,4 @@
-package com.example.vkapp.data.model
+package com.example.vkapp.data.model.feedPost
 
 import com.google.gson.annotations.SerializedName
 
@@ -8,8 +8,8 @@ data class PostDto(
     @SerializedName("text") val text: String?,
     @SerializedName("date") val date: Long,
     @SerializedName("likes") val likes: LikesDto?,
-    @SerializedName("comments") val comments: CommentsDto,
-    @SerializedName("views") val views: ViewsDto,
-    @SerializedName("reposts") val reposts: RepostsDto,
+    @SerializedName("comments") val comments: CommentsDto?,
+    @SerializedName("views") val views: ViewsDto?,
+    @SerializedName("reposts") val reposts: RepostsDto?,
     @SerializedName("attachments") val attachments: List<AttachmentDto>?
 )

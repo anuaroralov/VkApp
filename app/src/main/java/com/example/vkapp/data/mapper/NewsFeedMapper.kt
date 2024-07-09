@@ -1,11 +1,14 @@
 package com.example.vkapp.data.mapper
 
-import com.example.vkapp.data.model.CommentsResponseDto
-import com.example.vkapp.data.model.NewsFeedResponseDto
+import com.example.vkapp.data.model.feedPost.CommentsResponseDto
+import com.example.vkapp.data.model.feedPost.NewsFeedResponseDto
+import com.example.vkapp.data.model.feedPost.PhotoUrlDto
 import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.Link
 import com.example.vkapp.domain.PostComment
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
+import com.example.vkapp.domain.Video
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -25,8 +28,51 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(): List<FeedPost> {
             continue
         }
 
-        val isLiked = (post.likes.userLikes > 0 )
-        val contentText = post.text?:""
+        var isLiked = false
+        var likesCount: Int? = null
+        if (post.likes.canLike == 1) {
+            isLiked = (post.likes.userLikes > 0)
+            likesCount = post.likes.count
+        }
+
+        val commentsCount = if (post.comments?.canPost == 1) {
+            post.comments.count
+        } else {
+            null
+        }
+
+        val contentText = post.text
+
+        val contentImageUrls = post.attachments?.mapNotNull { attachment ->
+            attachment.photo?.photoUrls?.lastOrNull()?.url
+        }
+
+        val contentVideos = post.attachments?.mapNotNull { attachment ->
+            if (attachment.type == "video" && attachment.video != null) {
+                Video(
+                    id = attachment.video.id,
+                    ownerId = attachment.video.ownerId,
+                    title = attachment.video.title,
+                    description = attachment.video.description,
+                    duration = attachment.video.duration,
+                    thumbnailUrl = getHighestQualityPhoto(attachment.video.image),
+                    views = attachment.video.views,
+                    comments = attachment.video.comments
+                )
+            } else null
+        }
+
+        val contentLinks = post.attachments?.mapNotNull { attachment ->
+            if (attachment.type == "link" && attachment.link != null) {
+                Link(
+                    url = attachment.link.url,
+                    caption = attachment.link.caption,
+                    title = attachment.link.title,
+                    photo = getHighestQualityPhoto(attachment.link.photo?.photoUrls)
+                )
+            } else null
+        }
+
         val feedPost = FeedPost(
             id = post.id,
             communityId = post.communityId,
@@ -34,13 +80,14 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(): List<FeedPost> {
             publicationDate = mapTimestampToDate(post.date),
             communityImageUrl = group.imageUrl,
             contentText = contentText,
-            contentImageUrls = post.attachments?.mapNotNull { attachment ->
-            attachment.photo?.photoUrls?.lastOrNull()?.url },
+            contentImageUrls = contentImageUrls,
+            contentVideos = contentVideos,
+            contentLinks = contentLinks,
             statistics = listOf(
-                StatisticItem(type = StatisticType.LIKES, post.likes.count),
-                StatisticItem(type = StatisticType.VIEWS, post.views.count),
-                StatisticItem(type = StatisticType.SHARES, post.reposts.count),
-                StatisticItem(type = StatisticType.COMMENTS, post.comments.count)
+                StatisticItem(type = StatisticType.LIKES, likesCount),
+                StatisticItem(type = StatisticType.VIEWS, post.views?.count ?: null),
+                StatisticItem(type = StatisticType.SHARES, post.reposts?.count ?: null),
+                StatisticItem(type = StatisticType.COMMENTS, commentsCount)
             ),
             isLiked = isLiked
         )
@@ -72,4 +119,9 @@ internal fun CommentsResponseDto.mapResponseToComments(): List<PostComment> {
 private fun mapTimestampToDate(timestamp: Long): String {
     val date = Date(timestamp * 1000)
     return SimpleDateFormat("d MMMM yyyy, hh:mm", Locale.getDefault()).format(date)
+}
+
+fun getHighestQualityPhoto(photos: List<PhotoUrlDto>?): String? {
+    if (photos == null) return null
+    return photos.maxByOrNull { it.width * it.height }?.url
 }

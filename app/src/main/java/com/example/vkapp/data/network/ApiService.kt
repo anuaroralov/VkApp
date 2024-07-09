@@ -1,19 +1,19 @@
 package com.example.vkapp.data.network
 
-import com.example.vkapp.data.model.CommentsResponseDto
-import com.example.vkapp.data.model.LikesCountResponseDto
-import com.example.vkapp.data.model.NewsFeedResponseDto
+import com.example.vkapp.data.model.feedPost.CommentsResponseDto
+import com.example.vkapp.data.model.feedPost.LikesCountResponseDto
+import com.example.vkapp.data.model.feedPost.NewsFeedResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
 
-    @GET("newsfeed.getRecommended?v=5.199")
+    @GET("newsfeed.get?v=5.199")
     suspend fun loadRecommendations(
         @Query("access_token") token: String
     ): NewsFeedResponseDto
 
-    @GET("newsfeed.getRecommended?v=5.199")
+    @GET("newsfeed.get?v=5.199")
     suspend fun loadRecommendations(
         @Query("access_token") token: String,
         @Query("start_from") startFrom: String

@@ -13,8 +13,10 @@ data class FeedPost(
     val communityName: String,
     val publicationDate: String,
     val communityImageUrl: String,
-    val contentText: String,
+    val contentText: String?,
     val contentImageUrls: List<String>?,
+    val contentLinks: List<Link>?,
+    val contentVideos: List<Video>?,
     val statistics: List<StatisticItem>,
     val isLiked: Boolean
 ) : Parcelable {
