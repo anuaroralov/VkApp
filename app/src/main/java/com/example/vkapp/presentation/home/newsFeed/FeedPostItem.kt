@@ -40,20 +40,20 @@ fun LazyItemScope.FeedPostItem(
         enableDismissFromEndToStart = true,
         enableDismissFromStartToEnd = false,
         content = {
-    PostCard(
-        feedPost = feedPost,
-        onLikeClickListener = { _ ->
-            viewModel.changeLikeStatus(feedPost)
-        },
-        onShareClickListener = { statisticItem ->
-            viewModel.updateCount(feedPost, statisticItem)
-        },
-        onCommentClickListener = {
-            onCommentClickListener(feedPost)
-        },
-        onLinkClickListener = onLinkClickListener
-    )
-}
+            PostCard(
+                feedPost = feedPost,
+                onLikeClickListener = { _ ->
+                    viewModel.changeLikeStatus(feedPost)
+                },
+                onShareClickListener = { statisticItem ->
+                    viewModel.updateCount(feedPost, statisticItem)
+                },
+                onCommentClickListener = {
+                    onCommentClickListener(feedPost)
+                },
+                onLinkClickListener = onLinkClickListener
+            )
+        }
     )
 }
 

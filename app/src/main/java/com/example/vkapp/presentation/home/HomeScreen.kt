@@ -29,6 +29,7 @@ import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.presentation.home.newsFeed.FeedPostItem
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModel
+import com.example.vkapp.presentation.home.newsFeed.PostCard
 import com.example.vkapp.presentation.home.stories.AddStory
 import com.example.vkapp.presentation.home.stories.StoryIcon
 import com.vk.id.VKIDUser
@@ -79,10 +80,17 @@ fun HomeScreen(
         when (val currentState = screenState.value) {
             is NewsFeedScreenState.Posts -> {
                 items(items = currentState.posts, key = { it.id }) { feedPost ->
-                    FeedPostItem(
+                    PostCard(
                         feedPost = feedPost,
-                        viewModel = newsFeedViewModel,
-                        onCommentClickListener = onCommentClickListener,
+                        onLikeClickListener = { _ ->
+                            newsFeedViewModel.changeLikeStatus(feedPost)
+                        },
+                        onShareClickListener = { statisticItem ->
+                            newsFeedViewModel.updateCount(feedPost, statisticItem)
+                        },
+                        onCommentClickListener = {
+                            onCommentClickListener(feedPost)
+                        },
                         onLinkClickListener = onLinkClickListener
                     )
                 }

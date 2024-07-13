@@ -9,48 +9,39 @@ import com.example.vkapp.domain.PostComment
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
 import com.example.vkapp.domain.Video
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.absoluteValue
 
-internal fun NewsFeedResponseDto.mapResponseToPosts(): List<FeedPost> {
+fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, String) -> String): List<FeedPost> {
     val result = mutableListOf<FeedPost>()
 
     val posts = newsFeedContent.posts
     val groups = newsFeedContent.groups
 
     for (post in posts) {
-        val group = groups.find { it.id == post.communityId.absoluteValue }
+        val group = groups.find { it.id == post.communityId.absoluteValue } ?: continue
 
-        // Проверка, что group, post.id не null
-        if (group == null || post.id == null ) {
-            continue
-        }
-
-        val isLiked = (post.likes?.userLikes!! > 0)
-
-        val commentsCount = if (post.comments?.canView == 1) post.comments.count
-            else null
-
-
+        val isLiked = (post.likes?.userLikes ?: 0) > 0
+        val commentsCount = if (post.comments?.canView == 1) post.comments.count else null
         val contentText = post.text
-
-        val contentImageUrls = post.attachments?.mapNotNull { attachment ->
-            attachment.photo?.photoUrls?.lastOrNull()?.url
-        }
+        val contentImageUrls =
+            post.attachments?.mapNotNull { it.photo?.photoUrls?.lastOrNull()?.url }
 
         val contentVideos = post.attachments?.mapNotNull { attachment ->
             if (attachment.type == "video" && attachment.video != null) {
+                val videoUrl = runBlocking {
+                    getVideo(attachment.video.ownerId.toString(), attachment.video.id.toString())
+                }
                 Video(
-                    id = attachment.video.id,
-                    ownerId = attachment.video.ownerId,
                     title = attachment.video.title,
                     description = attachment.video.description,
-                    duration = attachment.video.duration,
                     thumbnailUrl = getHighestQualityPhoto(attachment.video.image),
                     views = attachment.video.views,
-                    comments = attachment.video.comments
+                    comments = attachment.video.comments,
+                    videoUrl = videoUrl
                 )
             } else null
         }

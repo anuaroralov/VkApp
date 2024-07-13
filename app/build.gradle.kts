@@ -112,6 +112,8 @@ dependencies {
 
     implementation ("androidx.webkit:webkit:1.11.0")
 
+    "implementation" ("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0")
+
 
 }
 

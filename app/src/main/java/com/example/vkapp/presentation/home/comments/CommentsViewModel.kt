@@ -1,11 +1,13 @@
 package com.example.vkapp.presentation.home.comments
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vkapp.data.repository.NewsFeedRepository
 import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
 import kotlinx.coroutines.launch
 
 class CommentsViewModel(
@@ -30,6 +32,16 @@ class CommentsViewModel(
             )
         }
     }
+
+    fun loadNextComments(feedPost: FeedPost) {
+        _screenState.value = CommentsScreenState.Comments(
+            comments = repository.comments,
+            feedPost = feedPost,
+            nextDataIsLoading = true
+        )
+        loadComments(feedPost)
+    }
+
 
 //    fun addComment(feedPost: FeedPost, comment: String) {
 //        viewModelScope.launch {

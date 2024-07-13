@@ -10,17 +10,22 @@ import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
 import com.vk.id.VKID
 
-class NewsFeedRepository() {
+class NewsFeedRepository {
 
     private val _feedPosts = mutableListOf<FeedPost>()
     val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
-    private var nextFrom: String? = null
+    private val _comments = mutableListOf<PostComment>()
+    val comments: List<PostComment>
+        get() = _comments.toList()
+
+    private var nextFromPosts: String? = null
+    private var nextFromComments: Int = 0
 
     suspend fun loadRecommendations(): List<FeedPost> {
-        val token=VKID.instance.accessToken?.token?: throw IllegalStateException("Token is null")
-        val startFrom = nextFrom
+        val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
+        val startFrom = nextFromPosts
 
         if (startFrom == null && feedPosts.isNotEmpty()) return feedPosts
 
@@ -30,14 +35,19 @@ class NewsFeedRepository() {
             Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
             apiService.loadRecommendations(token, startFrom)
         }
-        nextFrom = response.newsFeedContent.nextFrom
-        val posts = response.mapResponseToPosts()
+        nextFromPosts = response.newsFeedContent.nextFrom
+        val posts = response.mapResponseToPosts { ownerId, videoId ->
+            apiService.getVideo(
+                accessToken = token,
+                videos = ownerId+"_"+videoId
+            ).response.videoUrls.last().videoUrl
+        }
         _feedPosts.addAll(posts)
         return feedPosts
     }
 
     suspend fun changeLikeStatus(feedPost: FeedPost) {
-        val token=VKID.instance.accessToken?.token?: throw IllegalStateException("Token is null")
+        val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
         val response = if (feedPost.isLiked) {
             apiService.deleteLike(
                 token = token,
@@ -62,12 +72,29 @@ class NewsFeedRepository() {
     }
 
     suspend fun getComments(feedPost: FeedPost): List<PostComment> {
-        val token=VKID.instance.accessToken?.token?: throw IllegalStateException("Token is null")
-        val comments = apiService.getComments(
-            accessToken = token,
-            ownerId = feedPost.communityId,
-            postId = feedPost.id
-        )
-        return comments.mapResponseToComments()
+        val startFrom = nextFromComments
+        val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
+
+        if (startFrom == 0 && comments.isNotEmpty()) return comments
+
+        val response = if (startFrom == 0) {
+            apiService.getComments(
+                accessToken = token,
+                ownerId = feedPost.communityId,
+                postId = feedPost.id,
+            )
+        } else {
+            Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
+            apiService.getComments(
+                accessToken = token,
+                ownerId = feedPost.communityId,
+                postId = feedPost.id,
+                offset = startFrom
+            )
+        }
+        val comms = response.mapResponseToComments()
+        nextFromPosts += comms.size
+        _comments.addAll(comms)
+        return comments
     }
 }

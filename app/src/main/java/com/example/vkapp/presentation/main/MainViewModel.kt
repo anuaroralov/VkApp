@@ -34,7 +34,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (loggedIn) {
 //            Log.d("MainViewModel",VKID.instance.accessToken?.expireTime.toString()+"     "+System.currentTimeMillis())
             if (accessTokenIsExpired()) {
-                Log.d("MainViewModel", "123")
+                Log.d("MainViewModel", "token is expired")
                 refreshAccessToken()
             }
             getUserInfo()
@@ -79,7 +79,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch() {
             VKID.instance.refreshToken(callback = object : VKIDRefreshTokenCallback {
                 override fun onSuccess(token: AccessToken) {
-                    Log.d("MainViewModel", "token after refresh=${token}")
+                    Log.d("MainViewModel", "token after refresh=${token.token}")
                 }
 
                 override fun onFail(fail: VKIDRefreshTokenFail) {

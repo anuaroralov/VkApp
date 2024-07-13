@@ -34,13 +34,15 @@ fun MainScreen(user: VKIDUser?) {
 
     val showBottomBar = navBackStackEntry?.destination?.route != Screen.Comments.route
 
-    val context1 = LocalContext.current
+    val context = LocalContext.current
 
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(0.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                        0.000000000000000000000000000000000000000000001.dp
+                    ),
                     contentColor = MaterialTheme.colorScheme.onSurface
                 ) {
                     val items = listOf(
@@ -87,7 +89,7 @@ fun MainScreen(user: VKIDUser?) {
                         navigationState.navigateToComments(it)
                     },
                     onLinkClickListener = { url ->
-                        openUrl(url, context = context1)
+                        openUrl(url, context = context)
                     },
                     user = user
                 )
