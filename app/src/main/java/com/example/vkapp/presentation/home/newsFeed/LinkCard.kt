@@ -43,7 +43,7 @@ fun LinkCard(
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if(link.title!=null){
+            if (link.title != null) {
                 Text(
                     text = link.title,
                     modifier = Modifier.padding(horizontal = 8.dp),
@@ -51,7 +51,7 @@ fun LinkCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
-            if(link.caption!=null){
+            if (link.caption != null) {
                 Text(
                     text = link.caption,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

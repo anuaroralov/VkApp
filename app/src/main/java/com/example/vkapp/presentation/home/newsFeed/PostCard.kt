@@ -69,7 +69,7 @@ fun PostCard(
 
             if (feedPost.contentVideos != null) {
                 feedPost.contentVideos.forEach { video ->
-                    VideoCard(video = video)
+                    VideoCard(video = video, onLinkClickListener = onLinkClickListener)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }

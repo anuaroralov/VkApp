@@ -53,6 +53,6 @@ interface ApiService {
     @GET("video.get?v=5.199")
     suspend fun getVideo(
         @Query("access_token") accessToken: String,
-        @Query("videos") videos:String
-    ) : VideoUrlResponseDto
+        @Query("videos") videos: String
+    ): VideoUrlResponseDto
 }

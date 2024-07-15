@@ -9,4 +9,4 @@ data class Link(
     val caption: String?,
     val photo: String?,
     val title: String?
-): Parcelable
+) : Parcelable

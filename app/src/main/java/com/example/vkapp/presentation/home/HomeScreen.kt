@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.domain.FeedPost
-import com.example.vkapp.presentation.home.newsFeed.FeedPostItem
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModel
 import com.example.vkapp.presentation.home.newsFeed.PostCard

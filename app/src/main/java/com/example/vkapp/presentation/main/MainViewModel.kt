@@ -49,7 +49,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun getUserInfo() {
-        viewModelScope.launch() {
+        viewModelScope.launch {
             VKID.instance.getUserData(callback = object : VKIDGetUserCallback {
                 override fun onFail(fail: VKIDGetUserFail) {
                     when (fail) {
@@ -76,7 +76,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun refreshAccessToken() {
-        viewModelScope.launch() {
+        viewModelScope.launch {
             VKID.instance.refreshToken(callback = object : VKIDRefreshTokenCallback {
                 override fun onSuccess(token: AccessToken) {
                     Log.d("MainViewModel", "token after refresh=${token.token}")

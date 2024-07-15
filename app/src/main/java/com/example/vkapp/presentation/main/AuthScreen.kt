@@ -27,18 +27,23 @@ fun AuthScreen(viewModel: MainViewModel) {
                     is VKIDAuthFail.Canceled -> {
                         TODO()
                     }
+
                     is VKIDAuthFail.FailedApiCall -> {
                         TODO()
                     }
+
                     is VKIDAuthFail.FailedOAuth -> {
                         TODO()
                     }
+
                     is VKIDAuthFail.FailedOAuthState -> {
                         TODO()
                     }
+
                     is VKIDAuthFail.FailedRedirectActivity -> {
                         TODO()
                     }
+
                     is VKIDAuthFail.NoBrowserAvailable -> {
                         TODO()
                     }

@@ -29,19 +29,33 @@ class NewsFeedRepository {
 
         if (startFrom == null && feedPosts.isNotEmpty()) return feedPosts
 
-        val response = if (startFrom == null) {
-            apiService.loadRecommendations(token)
-        } else {
-            Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
-            apiService.loadRecommendations(token, startFrom)
+        val response = try {
+            if (startFrom == null) {
+                apiService.loadRecommendations(token)
+            } else {
+                Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
+                apiService.loadRecommendations(token, startFrom)
+            }
+        } catch (e: Exception) {
+            Log.e("NewsFeedRepository", "Failed to load recommendations", e)
+            return emptyList()
         }
+
         nextFromPosts = response.newsFeedContent.nextFrom
+
         val posts = response.mapResponseToPosts { ownerId, videoId ->
-            apiService.getVideo(
-                accessToken = token,
-                videos = ownerId+"_"+videoId
-            ).response.videoUrls.last().videoUrl
+            try {
+                val videoResponse = apiService.getVideo(
+                    accessToken = token,
+                    videos = ownerId + "_" + videoId
+                )
+                videoResponse.response?.videoUrls?.lastOrNull()?.videoUrl ?: ""
+            } catch (e: Exception) {
+                Log.e("NewsFeedRepository", "Failed to get video URL for $ownerId$videoId", e)
+                ""
+            }
         }
+
         _feedPosts.addAll(posts)
         return feedPosts
     }

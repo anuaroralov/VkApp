@@ -10,5 +10,5 @@ data class Video(
     val thumbnailUrl: String?,
     val views: Int,
     val comments: Int,
-    val videoUrl: String
-): Parcelable
+    val videoUrl: String?
+) : Parcelable
