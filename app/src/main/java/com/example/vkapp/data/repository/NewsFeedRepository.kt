@@ -8,94 +8,117 @@ import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.PostComment
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
+import com.example.vkapp.extensions.mergeWith
 import com.vk.id.VKID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.retry
+import kotlinx.coroutines.flow.stateIn
+
 
 class NewsFeedRepository {
 
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+    private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
+    private val refreshedListFlow = MutableSharedFlow<List<FeedPost>>()
+
     private val _feedPosts = mutableListOf<FeedPost>()
-    val feedPosts: List<FeedPost>
+    private val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
-    private var nextFromPosts: String? = null
+    private var nextFrom: String? = null
 
-    suspend fun loadRecommendations(): List<FeedPost> {
-        val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
-        val startFrom = nextFromPosts
+    // Загруженный список постов
+    private val loadedListFlow = flow {
+        nextDataNeededEvents.emit(Unit)
+        nextDataNeededEvents.collect {
+            val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
+            val startFrom = nextFrom
 
-        if (startFrom == null && feedPosts.isNotEmpty()) return feedPosts
+            if (startFrom == null && feedPosts.isNotEmpty()) {
+                emit(feedPosts)
+                return@collect
+            }
 
-        val response = try {
-            if (startFrom == null) {
+            val response = if (startFrom == null) {
                 apiService.loadRecommendations(token)
             } else {
                 Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
                 apiService.loadRecommendations(token, startFrom)
             }
-        } catch (e: Exception) {
-            Log.e("NewsFeedRepository", "Failed to load recommendations", e)
-            return emptyList()
-        }
 
-        nextFromPosts = response.newsFeedContent.nextFrom
+            nextFrom = response.newsFeedContent.nextFrom
 
-        val posts = response.mapResponseToPosts { ownerId, videoId ->
-            try {
-                val videoResponse = apiService.getVideo(
-                    accessToken = token,
-                    videos = ownerId + "_" + videoId
-                )
-                videoResponse.response?.videoUrls?.lastOrNull()?.videoUrl ?: ""
-            } catch (e: Exception) {
-                Log.e("NewsFeedRepository", "Failed to get video URL for $ownerId$videoId", e)
-                ""
+            val posts = response.mapResponseToPosts { ownerId, videoId ->
+                try {
+                    val videoResponse = apiService.getVideo(
+                        accessToken = token, videos = ownerId + "_" + videoId
+                    )
+                    videoResponse.response.videoUrls?.lastOrNull()?.videoUrl ?: ""
+                } catch (e: Exception) {
+                    Log.e("NewsFeedRepository", "Failed to get video URL for $ownerId$videoId", e)
+                    ""
+                }
             }
-        }
 
-        _feedPosts.addAll(posts)
-        return feedPosts
+            _feedPosts.addAll(posts)
+            emit(feedPosts)
+        }
+    }.retry {
+        delay(RETRY_TIMEOUT_MILLIS)
+        true
     }
 
+    // Публичный поток с рекомендациями
+    val recommendations: StateFlow<List<FeedPost>> =
+        loadedListFlow.mergeWith(refreshedListFlow).stateIn(
+            scope = coroutineScope, started = SharingStarted.Lazily, initialValue = feedPosts
+        )
+
+    // Загрузка следующих данных
+    suspend fun loadNextData() {
+        nextDataNeededEvents.emit(Unit)
+    }
+
+    // Изменение статуса "лайка"
     suspend fun changeLikeStatus(feedPost: FeedPost) {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
         val response = if (feedPost.isLiked) {
-            apiService.deleteLike(
-                token = token,
-                ownerId = feedPost.communityId,
-                postId = feedPost.id
-            )
+            apiService.deleteLike(token, feedPost.communityId, feedPost.id)
         } else {
-            apiService.addLike(
-                token = token,
-                ownerId = feedPost.communityId,
-                postId = feedPost.id
-            )
+            apiService.addLike(token, feedPost.communityId, feedPost.id)
         }
         val newLikesCount = response.likes.count
         val newStatistics = feedPost.statistics.toMutableList().apply {
             removeIf { it.type == StatisticType.LIKES }
-            add(StatisticItem(type = StatisticType.LIKES, newLikesCount))
+            add(StatisticItem(StatisticType.LIKES, newLikesCount))
         }
         val newPost = feedPost.copy(statistics = newStatistics, isLiked = !feedPost.isLiked)
         val postIndex = _feedPosts.indexOf(feedPost)
-        _feedPosts[postIndex] = newPost
+        if (postIndex != -1) {
+            _feedPosts[postIndex] = newPost
+            refreshedListFlow.emit(feedPosts)
+        }
     }
 
     suspend fun getComments(feedPost: FeedPost, offset: Int = 0): List<PostComment> {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
 
-        return if (offset == 0) {
-            apiService.getComments(
-                accessToken = token,
-                ownerId = feedPost.communityId,
-                postId = feedPost.id,
-            ).mapResponseToComments()
-        } else {
-            apiService.getComments(
-                accessToken = token,
-                ownerId = feedPost.communityId,
-                postId = feedPost.id,
-                offset = offset
-            ).mapResponseToComments()
-        }
+        return apiService.getComments(
+            accessToken = token,
+            ownerId = feedPost.communityId,
+            postId = feedPost.id,
+            offset = offset
+        ).mapResponseToComments()
+    }
+
+    companion object {
+        private const val RETRY_TIMEOUT_MILLIS = 3000L
     }
 }

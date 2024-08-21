@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +44,7 @@ fun HomeScreen(
     user: VKIDUser?
 ) {
     val newsFeedViewModel: NewsFeedViewModel = viewModel()
-    val screenState = newsFeedViewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
+    val screenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
 
     LazyColumn(
         contentPadding = PaddingValues(
@@ -117,6 +117,10 @@ fun HomeScreen(
             }
 
             is NewsFeedScreenState.Initial -> {
+
+            }
+
+            is NewsFeedScreenState.Loading -> {
                 item {
                     Box(
                         modifier = Modifier
@@ -124,11 +128,26 @@ fun HomeScreen(
                             .padding(paddingValues),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = screenState.value.toString())
+                        CircularProgressIndicator(
+                            color = Color.Gray,
+                            modifier = Modifier.size(48.dp) // Adding size to the loader
+                        )
                     }
                 }
             }
 
+            is NewsFeedScreenState.Error -> {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = currentState.error)
+                    }
+                }
+            }
         }
     }
 }
