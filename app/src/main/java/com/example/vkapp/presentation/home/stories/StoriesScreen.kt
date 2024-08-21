@@ -1,6 +1,7 @@
 package com.example.vkapp.presentation.home.stories
 
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -28,12 +29,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.ui.PlayerView
 import com.example.vkapp.R
 import kotlin.math.max
 import kotlin.math.min
 
+@OptIn(UnstableApi::class)
 @Composable
 fun StoriesScreen() {
     val images = remember {
@@ -48,14 +54,15 @@ fun StoriesScreen() {
 
     val videos = remember {
         listOf(
-            Uri.parse("android.resource://your.package.name/raw/video1"),
-            Uri.parse("android.resource://your.package.name/raw/video2")
+            Uri.parse("https://vkvd187.mycdn.me/video.m3u8?srcIp=93.170.37.72&pr=48&expires=1723346755107&srcAg=CHROME&fromCache=1&ms=185.226.53.187&mid=10422018584576&type=2&sig=5zxgXDQAdvw&ct=8&urls=45.136.21.159&clientType=13&zs=14&cmd=videoPlayerCdn&id=7800722229760"),
+            Uri.parse("https://vkvd187.mycdn.me/video.m3u8?srcIp=93.170.37.72&pr=48&expires=1723346755107&srcAg=CHROME&fromCache=1&ms=185.226.53.187&mid=10422018584576&type=2&sig=5zxgXDQAdvw&ct=8&urls=45.136.21.159&clientType=13&zs=14&cmd=videoPlayerCdn&id=7800722229760")
         )
     }
 
     val stepCount = images.size + videos.size
     val currentStep = remember { mutableIntStateOf(0) }
     val isPaused = remember { mutableStateOf(false) }
+    val videoDuration = remember { mutableIntStateOf(5000) } // Default duration for images
 
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
@@ -90,11 +97,17 @@ fun StoriesScreen() {
                 contentScale = ContentScale.FillHeight,
                 modifier = mediaModifier
             )
+            videoDuration.value = 2000 // Duration for images
         } else {
             val context = LocalContext.current
             val player = remember {
                 ExoPlayer.Builder(context).build().apply {
-                    setMediaItem(MediaItem.fromUri(videos[currentStep.intValue - images.size]))
+                    val dataSourceFactory = DefaultHttpDataSource.Factory()
+                    val mediaSourceFactory = HlsMediaSource.Factory(dataSourceFactory)
+                    val mediaItem = MediaItem.fromUri(videos[currentStep.intValue - images.size])
+                    val mediaSource = mediaSourceFactory.createMediaSource(mediaItem)
+                    setMediaSource(mediaSource)
+                    playWhenReady = true // Автоматическое воспроизведение видео
                     prepare()
                 }
             }
@@ -105,10 +118,35 @@ fun StoriesScreen() {
                 }
             }
 
+            player.addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_READY) {
+                        videoDuration.value = player.duration.toInt()
+                    }
+                }
+
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (!isPlaying && !isPaused.value) {
+                        currentStep.intValue = (currentStep.intValue + 1) % stepCount
+                    }
+                }
+            })
+
             AndroidView(
-                factory = { PlayerView(context).apply { this.player = player } },
+                factory = { PlayerView(context).apply {
+                    this.player = player
+                    useController = false // Отключение элементов управления
+                } },
                 modifier = mediaModifier
             )
+
+            LaunchedEffect(isPaused.value) {
+                if (isPaused.value) {
+                    player.pause()
+                } else {
+                    player.play()
+                }
+            }
         }
 
         InstagramProgressIndicator(
@@ -116,7 +154,7 @@ fun StoriesScreen() {
                 .fillMaxWidth()
                 .padding(5.dp),
             stepCount = stepCount,
-            stepDuration = if (currentStep.intValue < images.size) 2000 else 5000,
+            stepDuration = videoDuration.value,
             unSelectedColor = Color.LightGray,
             selectedColor = Color.White,
             currentStep = currentStep.intValue,
@@ -150,7 +188,7 @@ fun InstagramProgressIndicator(
                 else -> 1f
             }
             LinearProgressIndicator(
-                progress = { stepProgress },
+                progress = stepProgress,
                 modifier = Modifier
                     .weight(1f)
                     .padding(2.dp)
@@ -165,6 +203,7 @@ fun InstagramProgressIndicator(
         if (isPaused) {
             progress.stop()
         } else {
+            progress.snapTo(0f)
             for (i in currentStep until stepCount) {
                 progress.animateTo(
                     1f,

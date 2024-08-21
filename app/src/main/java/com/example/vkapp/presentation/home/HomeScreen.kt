@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -17,8 +18,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,7 +88,7 @@ fun HomeScreen(
                             newsFeedViewModel.changeLikeStatus(feedPost)
                         },
                         onShareClickListener = { statisticItem ->
-                            newsFeedViewModel.updateCount(feedPost, statisticItem)
+
                         },
                         onCommentClickListener = {
                             onCommentClickListener(feedPost)
@@ -113,9 +116,19 @@ fun HomeScreen(
                 }
             }
 
-            NewsFeedScreenState.Initial -> {
-                // Handle the initial state
+            is NewsFeedScreenState.Initial -> {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = screenState.value.toString())
+                    }
+                }
             }
+
         }
     }
 }

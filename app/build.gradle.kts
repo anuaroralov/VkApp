@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.exoplayer.hls)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -111,8 +112,6 @@ dependencies {
     implementation(libs.androidx.media3.ui)
 
     implementation ("androidx.webkit:webkit:1.11.0")
-
-    "implementation" ("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0")
 
     implementation (libs.accompanist.webview)
 

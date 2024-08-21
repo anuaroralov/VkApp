@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">VkApp</string>
     <string name="home">Главное</string>
-    <string name="favourite">Понравившееся</string>
     <string name="profile">Профиль</string>
     <string name="comments_title">Комментарии</string>
+    <string name="messages">Сообщения</string>
     <integer name="com_vk_sdk_AppId">51954479</integer>
 </resources>

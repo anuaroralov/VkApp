@@ -41,7 +41,7 @@ fun PostCard(
     onCommentClickListener: (StatisticItem) -> Unit,
     onLinkClickListener: (String) -> Unit
 ) {
-    var isExpanded = remember { mutableStateOf(false) }
+    var textIsExpanded = remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -53,9 +53,9 @@ fun PostCard(
             if (feedPost.contentText != null) {
                 ExpandableText(
                     text = feedPost.contentText,
-                    isExpanded = isExpanded.value,
+                    isExpanded = textIsExpanded.value,
                     onLinkClickListener = onLinkClickListener,
-                    onExpandClick = { isExpanded.value = !isExpanded.value },
+                    onExpandClick = { textIsExpanded.value = !textIsExpanded.value },
                     tint = MaterialTheme.colorScheme.onBackground,
                     size = 16.sp
                 )

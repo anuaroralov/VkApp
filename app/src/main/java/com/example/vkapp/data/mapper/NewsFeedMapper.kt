@@ -1,5 +1,6 @@
 package com.example.vkapp.data.mapper
 
+import com.example.vkapp.data.model.feedPost.CommentDto
 import com.example.vkapp.data.model.feedPost.CommentsResponseDto
 import com.example.vkapp.data.model.feedPost.NewsFeedResponseDto
 import com.example.vkapp.data.model.feedPost.PhotoUrlDto
@@ -15,7 +16,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.absoluteValue
 
-fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, String) -> String): List<FeedPost> {
+internal fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, String) -> String): List<FeedPost> {
     val result = mutableListOf<FeedPost>()
 
     val posts = newsFeedContent.posts
@@ -82,23 +83,33 @@ fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, String) ->
 
 internal fun CommentsResponseDto.mapResponseToComments(): List<PostComment> {
     val result = mutableListOf<PostComment>()
-    val comments = content.comments
-    val profiles = content.profiles
-    for (comment in comments) {
-        if (comment.text.isBlank()) continue
-        val author = profiles.firstOrNull { it.id == comment.authorId } ?: continue
-        val postComment = PostComment(
+
+    // Check if content is not null
+    val comments = content?.comments ?: emptyList()
+    val profiles = content?.profiles ?: emptyList()
+
+    fun mapComment(comment: CommentDto): PostComment? {
+        if (comment.text.isBlank()) return null
+        val author = profiles.firstOrNull { it.id == comment.authorId } ?: return null
+
+        // Recursively map replies, check if replies are not null
+        val replies = comment.replies?.items?.mapNotNull { mapComment(it) } ?: emptyList()
+
+        return PostComment(
             id = comment.id,
             authorName = "${author.firstName} ${author.lastName}",
             authorAvatarUrl = author.avatarUrl,
             commentText = comment.text,
-            publicationDate = mapTimestampToDate(comment.date)
+            publicationDate = mapTimestampToDate(comment.date),
+            replies = replies
         )
-        result.add(postComment)
+    }
+
+    for (comment in comments) {
+        mapComment(comment)?.let { result.add(it) }
     }
     return result
 }
-
 
 private fun mapTimestampToDate(timestamp: Long): String {
     val date = Date(timestamp * 1000)

@@ -32,7 +32,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         Log.d("MainViewModel", "token=${token?.token}")
         val loggedIn = token != null
         if (loggedIn) {
-//            Log.d("MainViewModel",VKID.instance.accessToken?.expireTime.toString()+"     "+System.currentTimeMillis())
             if (accessTokenIsExpired()) {
                 Log.d("MainViewModel", "token is expired")
                 refreshAccessToken()

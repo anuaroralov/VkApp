@@ -14,7 +14,9 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -47,7 +49,7 @@ fun MainScreen(user: VKIDUser?) {
                 ) {
                     val items = listOf(
                         NavigationItem.Home,
-                        NavigationItem.Favourite,
+                        NavigationItem.Messages,
                         NavigationItem.Profile
                     )
                     items.forEach { item ->
@@ -61,10 +63,17 @@ fun MainScreen(user: VKIDUser?) {
                                 navigationState.navigateTo(item.screen.route)
                             },
                             icon = {
-                                Icon(
-                                    item.icon,
-                                    contentDescription = stringResource(item.title)
-                                )
+                                if (item.icon is ImageVector) {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = stringResource(item.title)
+                                    )
+                                } else if (item.icon is Int) {
+                                    Icon(
+                                        painter = painterResource(id = item.icon),
+                                        contentDescription = stringResource(item.title)
+                                    )
+                                }
                             },
                             label = { Text(text = stringResource(item.title)) },
                             colors = NavigationBarItemDefaults.colors(

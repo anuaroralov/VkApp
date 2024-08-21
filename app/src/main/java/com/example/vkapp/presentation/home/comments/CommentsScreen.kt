@@ -1,10 +1,10 @@
 package com.example.vkapp.presentation.home.comments
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.PostComment
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentsScreen(
@@ -54,6 +54,9 @@ fun CommentsScreen(
     )
     val screenState by viewModel.screenState.observeAsState(CommentsScreenState.Initial)
     var commentText by remember { mutableStateOf("") }
+    var replyingToComment by remember { mutableStateOf<PostComment?>(null) }
+    val hasMoreComments by viewModel.hasMoreComments.observeAsState(true)
+    val nextDataIsLoading by viewModel.nextDataIsLoading.observeAsState(false)
 
     Scaffold(
         topBar = {
@@ -106,8 +109,9 @@ fun CommentsScreen(
                 IconButton(
                     onClick = {
                         if (commentText.isNotBlank()) {
-                            // viewModel.addComment(feedPost, commentText)
+                            // viewModel.addComment(feedPost, commentText, replyingToComment?.id)
                             commentText = ""
+                            replyingToComment = null
                         }
                     },
                     enabled = commentText.isNotBlank()
@@ -124,7 +128,6 @@ fun CommentsScreen(
                     )
                 }
             }
-
         }
     ) { paddingValues ->
         when (val currentState = screenState) {
@@ -142,11 +145,11 @@ fun CommentsScreen(
                         items = currentState.comments,
                         key = { it.id }
                     ) { comment ->
-                        CommentItem(comment = comment)
+                        CommentItem(comment = comment, onReply = { replyingToComment = it })
                     }
 
                     item {
-                        if (currentState.nextDataIsLoading) {
+                        if (nextDataIsLoading) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -156,7 +159,7 @@ fun CommentsScreen(
                             ) {
                                 CircularProgressIndicator(color = Color.Gray)
                             }
-                        } else {
+                        } else if(hasMoreComments) {
                             SideEffect {
                                 viewModel.loadNextComments(feedPost)
                             }
@@ -166,8 +169,19 @@ fun CommentsScreen(
             }
 
             CommentsScreenState.Initial -> {}
+            CommentsScreenState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(color = Color.Gray)
+                }
+            }
         }
     }
 }
+
 
 

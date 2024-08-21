@@ -5,5 +5,6 @@ data class PostComment(
     val authorName: String,
     val authorAvatarUrl: String,
     val commentText: String,
-    val publicationDate: String
+    val publicationDate: String,
+    val replies: List<PostComment> = emptyList()
 )

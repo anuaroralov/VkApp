@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.vkapp.presentation.home.stories.StoriesScreen
 import com.example.vkapp.ui.theme.VkAppTheme
 
 class MainActivity : ComponentActivity() {

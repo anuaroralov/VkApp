@@ -23,7 +23,7 @@ fun LazyItemScope.FeedPostItem(
 
     LaunchedEffect(swipeToDismissBoxState.currentValue) {
         if (swipeToDismissBoxState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-            viewModel.remove(feedPost)
+//            viewModel.remove(feedPost)
         }
     }
 
@@ -46,7 +46,7 @@ fun LazyItemScope.FeedPostItem(
                     viewModel.changeLikeStatus(feedPost)
                 },
                 onShareClickListener = { statisticItem ->
-                    viewModel.updateCount(feedPost, statisticItem)
+
                 },
                 onCommentClickListener = {
                     onCommentClickListener(feedPost)

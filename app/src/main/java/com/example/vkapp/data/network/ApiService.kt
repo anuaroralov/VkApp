@@ -9,17 +9,20 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    @GET("newsfeed.getRecommended?v=5.199&filters=post")
+    @GET("newsfeed.get?v=5.199&filters=post")
     suspend fun loadRecommendations(
         @Query("access_token") token: String
     ): NewsFeedResponseDto
 
-    @GET("newsfeed.getRecommended?v=5.199&filters=post")
+    @GET("newsfeed.get?v=5.199&filters=post")
     suspend fun loadRecommendations(
-        @Query("access_token") token: String,
-        @Query("start_from") startFrom: String
+        @Query("access_token") token: String, @Query("start_from") startFrom: String
     ): NewsFeedResponseDto
 
+    @GET("video.get?v=5.199")
+    suspend fun getVideo(
+        @Query("access_token") accessToken: String, @Query("videos") videos: String
+    ): VideoUrlResponseDto
 
     @GET("likes.add?v=5.199&type=post")
     suspend fun addLike(
@@ -35,7 +38,14 @@ interface ApiService {
         @Query("item_id") postId: Long
     ): LikesCountResponseDto
 
-    @GET("wall.getComments?v=5.199&extended=1&fields=photo_100&count=20")
+    @GET("wall.getComments?v=5.199&extended=1&fields=photo_100&count=20&thread_items_count=2&need_likes=1")
+    suspend fun getComments(
+        @Query("access_token") accessToken: String,
+        @Query("owner_id") ownerId: Long,
+        @Query("post_id") postId: Long,
+    ): CommentsResponseDto
+
+    @GET("wall.getComments?v=5.199&extended=1&fields=photo_100&count=20&thread_items_count=2&need_likes=1")
     suspend fun getComments(
         @Query("access_token") accessToken: String,
         @Query("owner_id") ownerId: Long,
@@ -43,16 +53,5 @@ interface ApiService {
         @Query("offset") offset: Int
     ): CommentsResponseDto
 
-    @GET("wall.getComments?v=5.199&extended=1&fields=photo_100&count=20")
-    suspend fun getComments(
-        @Query("access_token") accessToken: String,
-        @Query("owner_id") ownerId: Long,
-        @Query("post_id") postId: Long,
-    ): CommentsResponseDto
 
-    @GET("video.get?v=5.199")
-    suspend fun getVideo(
-        @Query("access_token") accessToken: String,
-        @Query("videos") videos: String
-    ): VideoUrlResponseDto
 }

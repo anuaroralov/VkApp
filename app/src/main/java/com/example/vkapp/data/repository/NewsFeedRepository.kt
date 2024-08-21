@@ -16,12 +16,7 @@ class NewsFeedRepository {
     val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
-    private val _comments = mutableListOf<PostComment>()
-    val comments: List<PostComment>
-        get() = _comments.toList()
-
     private var nextFromPosts: String? = null
-    private var nextFromComments: Int = 0
 
     suspend fun loadRecommendations(): List<FeedPost> {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
@@ -85,30 +80,22 @@ class NewsFeedRepository {
         _feedPosts[postIndex] = newPost
     }
 
-    suspend fun getComments(feedPost: FeedPost): List<PostComment> {
-        val startFrom = nextFromComments
+    suspend fun getComments(feedPost: FeedPost, offset: Int = 0): List<PostComment> {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
 
-        if (startFrom == 0 && comments.isNotEmpty()) return comments
-
-        val response = if (startFrom == 0) {
+        return if (offset == 0) {
             apiService.getComments(
                 accessToken = token,
                 ownerId = feedPost.communityId,
                 postId = feedPost.id,
-            )
+            ).mapResponseToComments()
         } else {
-            Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
             apiService.getComments(
                 accessToken = token,
                 ownerId = feedPost.communityId,
                 postId = feedPost.id,
-                offset = startFrom
-            )
+                offset = offset
+            ).mapResponseToComments()
         }
-        val comms = response.mapResponseToComments()
-        nextFromPosts += comms.size
-        _comments.addAll(comms)
-        return comments
     }
 }
