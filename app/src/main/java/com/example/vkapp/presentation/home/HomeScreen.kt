@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModel
+import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModelFactory
 import com.example.vkapp.presentation.home.newsFeed.PostCard
 import com.example.vkapp.presentation.home.stories.AddStory
 import com.example.vkapp.presentation.home.stories.StoryIcon
@@ -43,7 +43,9 @@ fun HomeScreen(
     onLinkClickListener: (String) -> Unit,
     user: VKIDUser?
 ) {
-    val newsFeedViewModel: NewsFeedViewModel = viewModel()
+    val newsFeedViewModel: NewsFeedViewModel = viewModel(
+        factory = NewsFeedViewModelFactory()
+    )
     val screenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
 
     LazyColumn(
@@ -124,7 +126,7 @@ fun HomeScreen(
                 item {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillParentMaxSize()
                             .padding(paddingValues),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -140,7 +142,7 @@ fun HomeScreen(
                 item {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillParentMaxSize()
                             .padding(paddingValues),
                         contentAlignment = Alignment.Center,
                     ) {

@@ -1,6 +1,7 @@
 package com.example.vkapp.presentation.home.comments
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.R
 import com.example.vkapp.domain.FeedPost
@@ -55,8 +57,6 @@ fun CommentsScreen(
     val screenState by viewModel.screenState.observeAsState(CommentsScreenState.Initial)
     var commentText by remember { mutableStateOf("") }
     var replyingToComment by remember { mutableStateOf<PostComment?>(null) }
-    val hasMoreComments by viewModel.hasMoreComments.observeAsState(true)
-    val nextDataIsLoading by viewModel.nextDataIsLoading.observeAsState(false)
 
     Scaffold(
         topBar = {
@@ -141,15 +141,57 @@ fun CommentsScreen(
                         bottom = 72.dp
                     )
                 ) {
-                    items(
-                        items = currentState.comments,
-                        key = { it.id }
-                    ) { comment ->
-                        CommentItem(comment = comment, onReply = { replyingToComment = it })
+                    currentState.comments.forEach { comment ->
+                        item(key = comment.id) {
+                            CommentItem(
+                                comment = comment,
+                                onReply = { replyingToComment = it },
+                            )
+                        }
+
+                        comment.replies?.let { replies ->
+                            items(replies.items, key = { it.id }) { reply ->
+                                CommentItem(
+                                    comment = reply,
+                                    onReply = { replyingToComment = it },
+                                    isReply = true
+                                )
+                            }
+                            if (replies.count != replies.items.size) {
+                                item {
+                                    val remainingReplies = replies.count - replies.items.size
+                                    val text =
+                                        if (remainingReplies == 1) "Show $remainingReplies more reply"
+                                        else "Show $remainingReplies more replies"
+                                    Text(
+                                        text = text,
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .padding(48.dp, 2.dp, 0.dp, 4.dp)
+                                            .clickable { viewModel.loadReplies(comment, feedPost) }
+                                    )
+                                }
+
+                            }
+                            item {
+                                if (comment.nextDataIsLoading) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(12.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        CircularProgressIndicator(color = Color.Gray)
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     item {
-                        if (nextDataIsLoading) {
+                        if (currentState.nextDataIsLoading) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -159,7 +201,7 @@ fun CommentsScreen(
                             ) {
                                 CircularProgressIndicator(color = Color.Gray)
                             }
-                        } else if(hasMoreComments) {
+                        } else if (currentState.hasMoreComments) {
                             SideEffect {
                                 viewModel.loadNextComments(feedPost)
                             }
@@ -182,6 +224,5 @@ fun CommentsScreen(
         }
     }
 }
-
 
 

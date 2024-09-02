@@ -1,4 +1,4 @@
-package com.example.vkapp.extensions
+package com.example.vkapp.presentation.utils
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge

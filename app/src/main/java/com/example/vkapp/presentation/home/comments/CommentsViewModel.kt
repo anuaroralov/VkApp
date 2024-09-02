@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.vkapp.data.repository.NewsFeedRepository
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.PostComment
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CommentsViewModel(
@@ -18,14 +17,6 @@ class CommentsViewModel(
 
     private val _screenState = MutableLiveData<CommentsScreenState>(CommentsScreenState.Initial)
     val screenState: LiveData<CommentsScreenState> = _screenState
-
-    private val _nextDataIsLoading=MutableLiveData(false)
-    val nextDataIsLoading:LiveData<Boolean> = _nextDataIsLoading
-
-    private val _hasMoreComments = MutableLiveData<Boolean>(true)
-    val hasMoreComments: LiveData<Boolean> = _hasMoreComments
-
-    private var offset = OFFSET
 
     init {
         loadComments(feedPost)
@@ -43,25 +34,70 @@ class CommentsViewModel(
     }
 
     fun loadNextComments(feedPost: FeedPost) {
-        if (_screenState.value == CommentsScreenState.Loading || _hasMoreComments.value == false) return
+        val currentState = _screenState.value as? CommentsScreenState.Comments ?: return
+        if (currentState.nextDataIsLoading || !currentState.hasMoreComments) return
 
         viewModelScope.launch {
-            _nextDataIsLoading.value=true
-            val currentComments = (_screenState.value as CommentsScreenState.Comments).comments
-            val newComments = repository.getComments(feedPost, offset)
-            val updatedComments = currentComments + newComments // Concatenate the lists
-            _hasMoreComments.value = newComments.isNotEmpty()
-            _nextDataIsLoading.value=false
-            _screenState.value = CommentsScreenState.Comments(
-                feedPost = feedPost,
+            val updatedState = currentState.copy(nextDataIsLoading = true)
+            _screenState.value = updatedState
+
+            val newComments = repository.getComments(feedPost, currentState.offset)
+
+            val updatedComments = currentState.comments + newComments
+
+            val hasMoreComments = newComments.isNotEmpty()
+
+            _screenState.value = updatedState.copy(
                 comments = updatedComments,
+                nextDataIsLoading = false,
+                hasMoreComments = hasMoreComments,
+                offset = updatedState.offset + OFFSET
             )
-            offset += OFFSET
         }
     }
-    companion object{
-        const val OFFSET=20
+
+
+    fun loadReplies(comment: PostComment, feedPost: FeedPost) {
+
+        viewModelScope.launch {
+            val initialComment = comment.copy(
+                nextDataIsLoading = true
+            )
+
+            val initialState = _screenState.value as? CommentsScreenState.Comments
+            val initialComments =
+                initialState?.comments?.map { if (it.id == comment.id) initialComment else it }
+
+            _screenState.value = CommentsScreenState.Comments(
+                feedPost = feedPost,
+                comments = initialComments ?: initialState?.comments.orEmpty()
+            )
+
+            val newReplies = repository.getComments(
+                feedPost = feedPost,
+                commentId = comment.id,
+                offset = comment.repliesOffset
+            )
+
+            val updatedComment = comment.copy(
+                replies = comment.replies?.copy(items = comment.replies.items+newReplies),
+                repliesOffset = comment.repliesOffset+ OFFSET,
+                nextDataIsLoading = false
+            )
+
+            val currentState = _screenState.value as? CommentsScreenState.Comments
+            val updatedComments =
+                currentState?.comments?.map { if (it.id == comment.id) updatedComment else it }
+
+            _screenState.value = CommentsScreenState.Comments(
+                feedPost = feedPost,
+                comments = updatedComments ?: currentState?.comments.orEmpty()
+            )
+
+        }
+    }
+
+    companion object {
+        const val OFFSET = 20
     }
 }
-
-

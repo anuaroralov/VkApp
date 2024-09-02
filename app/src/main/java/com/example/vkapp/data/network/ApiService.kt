@@ -11,12 +11,8 @@ interface ApiService {
 
     @GET("newsfeed.get?v=5.199&filters=post")
     suspend fun loadRecommendations(
-        @Query("access_token") token: String
-    ): NewsFeedResponseDto
-
-    @GET("newsfeed.get?v=5.199&filters=post")
-    suspend fun loadRecommendations(
-        @Query("access_token") token: String, @Query("start_from") startFrom: String
+        @Query("access_token") token: String,
+        @Query("start_from") startFrom: String=""
     ): NewsFeedResponseDto
 
     @GET("video.get?v=5.199")
@@ -43,15 +39,17 @@ interface ApiService {
         @Query("access_token") accessToken: String,
         @Query("owner_id") ownerId: Long,
         @Query("post_id") postId: Long,
+        @Query("offset") offset: Int,
+        @Query("comment_id") commentId: Long?=null
     ): CommentsResponseDto
 
-    @GET("wall.getComments?v=5.199&extended=1&fields=photo_100&count=20&thread_items_count=2&need_likes=1")
-    suspend fun getComments(
+    @GET("wall.createComment?v=5.199")
+    suspend fun createComment(
         @Query("access_token") accessToken: String,
         @Query("owner_id") ownerId: Long,
         @Query("post_id") postId: Long,
-        @Query("offset") offset: Int
+        @Query("message") message: String,
+        @Query("reply_to_comment") replyToCommentId: Long?=null
     ): CommentsResponseDto
-
 
 }

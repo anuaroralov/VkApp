@@ -3,7 +3,6 @@ package com.example.vkapp.presentation.utils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -15,10 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.vkapp.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -33,9 +30,7 @@ fun ImagePager(
                 model = imageUrls[page],
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Gray)
-                    .aspectRatio(1f), // чтобы сохранить пропорции
-                 // Замените на ресурс серого цвета или используйте ниже указанный вариант
+                    .background(Color.Gray),
                 contentDescription = null,
                 contentScale = ContentScale.Crop
             )

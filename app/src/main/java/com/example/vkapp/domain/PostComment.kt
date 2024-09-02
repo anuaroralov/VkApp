@@ -6,5 +6,7 @@ data class PostComment(
     val authorAvatarUrl: String,
     val commentText: String,
     val publicationDate: String,
-    val replies: List<PostComment> = emptyList()
+    val replies: CommentsReplies?,
+    val nextDataIsLoading: Boolean = false,
+    val repliesOffset: Int = 2
 )

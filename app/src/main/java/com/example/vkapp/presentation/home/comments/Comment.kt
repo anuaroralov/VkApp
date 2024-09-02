@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +29,7 @@ import com.example.vkapp.domain.PostComment
 fun CommentItem(
     comment: PostComment,
     onReply: (PostComment) -> Unit,
-    isReply: Boolean = false // Flag to indicate if the comment is a reply
+    isReply: Boolean = false
 ) {
     val paddingStart = if (isReply) 32.dp else 0.dp
     val textSize = if (isReply) 14.sp else 16.sp
@@ -83,9 +81,6 @@ fun CommentItem(
                     )
                 }
             }
-        }
-        comment.replies.forEach { reply ->
-            CommentItem(comment = reply, onReply = onReply, isReply = true)
         }
     }
 }

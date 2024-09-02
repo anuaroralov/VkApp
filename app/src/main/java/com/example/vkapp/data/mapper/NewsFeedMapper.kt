@@ -1,9 +1,11 @@
 package com.example.vkapp.data.mapper
 
+import android.util.Log
 import com.example.vkapp.data.model.feedPost.CommentDto
 import com.example.vkapp.data.model.feedPost.CommentsResponseDto
 import com.example.vkapp.data.model.feedPost.NewsFeedResponseDto
 import com.example.vkapp.data.model.feedPost.PhotoUrlDto
+import com.example.vkapp.domain.CommentsReplies
 import com.example.vkapp.domain.FeedPost
 import com.example.vkapp.domain.Link
 import com.example.vkapp.domain.PostComment
@@ -28,6 +30,7 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, S
         val isLiked = (post.likes?.userLikes ?: 0) > 0
         val commentsCount = if (post.comments?.canView == 1) post.comments.count else null
         val contentText = post.text
+
         val contentImageUrls =
             post.attachments?.mapNotNull { it.photo?.photoUrls?.lastOrNull()?.url }
 
@@ -84,21 +87,49 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, S
 internal fun CommentsResponseDto.mapResponseToComments(): List<PostComment> {
     val result = mutableListOf<PostComment>()
 
-    // Check if content is not null
-    val comments = content?.comments ?: emptyList()
-    val profiles = content?.profiles ?: emptyList()
+    val comments = content.comments
+    val profiles = content.profiles
+    val groups = content.groups
 
     fun mapComment(comment: CommentDto): PostComment? {
         if (comment.text.isBlank()) return null
-        val author = profiles.firstOrNull { it.id == comment.authorId } ?: return null
 
-        // Recursively map replies, check if replies are not null
-        val replies = comment.replies?.items?.mapNotNull { mapComment(it) } ?: emptyList()
+        val authorProfile = profiles.firstOrNull { it.id == comment.authorId }
+        val authorGroup = groups.firstOrNull { it.id == comment.authorId.absoluteValue }
+
+        val authorName: String
+        val authorAvatarUrl: String
+
+        Log.d("NewsFeedRepository", "authorProfile: $authorProfile, authorGroup: $authorGroup")
+        when {
+            authorProfile != null -> {
+                authorName = "${authorProfile.firstName} ${authorProfile.lastName}"
+                authorAvatarUrl = authorProfile.avatarUrl
+            }
+
+            authorGroup != null -> {
+                authorName = authorGroup.name
+                authorAvatarUrl = authorGroup.imageUrl
+            }
+
+            else -> {
+                return null
+            }
+        }
+
+        val replies = if (comment.replies == null) {
+            null
+        } else {
+            CommentsReplies(
+                items = comment.replies.items.mapNotNull { mapComment(it) },
+                count = comment.replies.count,
+            )
+        }
 
         return PostComment(
             id = comment.id,
-            authorName = "${author.firstName} ${author.lastName}",
-            authorAvatarUrl = author.avatarUrl,
+            authorName = authorName,
+            authorAvatarUrl = authorAvatarUrl,
             commentText = comment.text,
             publicationDate = mapTimestampToDate(comment.date),
             replies = replies
@@ -111,6 +142,7 @@ internal fun CommentsResponseDto.mapResponseToComments(): List<PostComment> {
     return result
 }
 
+
 private fun mapTimestampToDate(timestamp: Long): String {
     val date = Date(timestamp * 1000)
     return SimpleDateFormat("d MMMM yyyy, hh:mm", Locale.getDefault()).format(date)
@@ -120,3 +152,4 @@ fun getHighestQualityPhoto(photos: List<PhotoUrlDto>?): String? {
     if (photos == null) return null
     return photos.maxByOrNull { it.width * it.height }?.url
 }
+

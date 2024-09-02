@@ -5,10 +5,10 @@ import com.example.vkapp.data.mapper.mapResponseToComments
 import com.example.vkapp.data.mapper.mapResponseToPosts
 import com.example.vkapp.data.network.ApiFactory.apiService
 import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.NewsFeedResult
 import com.example.vkapp.domain.PostComment
 import com.example.vkapp.domain.StatisticItem
 import com.example.vkapp.domain.StatisticType
-import com.example.vkapp.extensions.mergeWith
 import com.vk.id.VKID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
 
@@ -34,59 +36,61 @@ class NewsFeedRepository {
 
     private var nextFrom: String? = null
 
-    // Загруженный список постов
-    private val loadedListFlow = flow {
+    val recommendations: StateFlow<NewsFeedResult> = flow {
         nextDataNeededEvents.emit(Unit)
         nextDataNeededEvents.collect {
-            val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
+            val token =
+                VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
             val startFrom = nextFrom
 
             if (startFrom == null && feedPosts.isNotEmpty()) {
-                emit(feedPosts)
-                return@collect
-            }
-
-            val response = if (startFrom == null) {
-                apiService.loadRecommendations(token)
+                emit(NewsFeedResult.Success(feedPosts))
             } else {
-                Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
-                apiService.loadRecommendations(token, startFrom)
-            }
-
-            nextFrom = response.newsFeedContent.nextFrom
-
-            val posts = response.mapResponseToPosts { ownerId, videoId ->
-                try {
-                    val videoResponse = apiService.getVideo(
-                        accessToken = token, videos = ownerId + "_" + videoId
-                    )
-                    videoResponse.response.videoUrls?.lastOrNull()?.videoUrl ?: ""
-                } catch (e: Exception) {
-                    Log.e("NewsFeedRepository", "Failed to get video URL for $ownerId$videoId", e)
-                    ""
+                val response = if (startFrom == null) {
+                    apiService.loadRecommendations(token)
+                } else {
+                    Log.d("NewsFeedRepository", "loadRecommendations: $startFrom")
+                    apiService.loadRecommendations(token, startFrom)
                 }
+
+                nextFrom = response.newsFeedContent.nextFrom
+
+                val posts = response.mapResponseToPosts { ownerId, videoId ->
+                    try {
+                        val videoResponse = apiService.getVideo(
+                            accessToken = token, videos = ownerId + "_" + videoId
+                        )
+                        videoResponse.response.videoUrls?.lastOrNull()?.videoUrl ?: ""
+                    } catch (e: Exception) {
+                        Log.e(
+                            "NewsFeedRepository",
+                            "Failed to get video URL for $ownerId$videoId",
+                            e
+                        )
+                        ""
+                    }
+                }
+
+                _feedPosts.addAll(posts)
+                emit(NewsFeedResult.Success(feedPosts))
             }
-
-            _feedPosts.addAll(posts)
-            emit(feedPosts)
         }
-    }.retry {
-        delay(RETRY_TIMEOUT_MILLIS)
-        true
     }
-
-    // Публичный поток с рекомендациями
-    val recommendations: StateFlow<List<FeedPost>> =
-        loadedListFlow.mergeWith(refreshedListFlow).stateIn(
-            scope = coroutineScope, started = SharingStarted.Lazily, initialValue = feedPosts
+        .map { NewsFeedResult.Success(feedPosts) as NewsFeedResult }
+        .retry(3) {
+            delay(RETRY_TIMEOUT_MILLIS)
+            true
+        }.catch { e->emit(NewsFeedResult.Error(e)) }
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.Lazily,
+            initialValue = NewsFeedResult.Loading
         )
 
-    // Загрузка следующих данных
     suspend fun loadNextData() {
         nextDataNeededEvents.emit(Unit)
     }
 
-    // Изменение статуса "лайка"
     suspend fun changeLikeStatus(feedPost: FeedPost) {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
         val response = if (feedPost.isLiked) {
@@ -107,14 +111,18 @@ class NewsFeedRepository {
         }
     }
 
-    suspend fun getComments(feedPost: FeedPost, offset: Int = 0): List<PostComment> {
+    suspend fun getComments(
+        feedPost: FeedPost,
+        offset: Int = 0,
+        commentId: Long? = null
+    ): List<PostComment> {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
-
         return apiService.getComments(
             accessToken = token,
             ownerId = feedPost.communityId,
             postId = feedPost.id,
-            offset = offset
+            offset = offset,
+            commentId = commentId
         ).mapResponseToComments()
     }
 

@@ -8,5 +8,5 @@ data class CommentDto(
     @SerializedName("text") val text: String,
     @SerializedName("date") val date: Long,
     @SerializedName("likes") val likes: LikesDto,
-    @SerializedName("thread") val replies: CommentsThreadDto
+    @SerializedName("thread") val replies: CommentsThreadDto?
 )
