@@ -108,12 +108,13 @@ dependencies {
     implementation(libs.coil.compose)
 
     implementation(libs.androidx.media3.exoplayer)
-    // ExoPlayer UI
+
     implementation(libs.androidx.media3.ui)
 
-    implementation ("androidx.webkit:webkit:1.11.0")
+    implementation (libs.androidx.webkit)
 
     implementation (libs.accompanist.webview)
+
 
 
 }

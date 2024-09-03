@@ -1,4 +1,4 @@
-package com.example.vkapp.domain
+package com.example.vkapp.domain.entity
 
 data class PostComment(
     val id: Long,

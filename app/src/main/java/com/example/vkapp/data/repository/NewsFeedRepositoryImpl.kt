@@ -4,15 +4,18 @@ import android.util.Log
 import com.example.vkapp.data.mapper.mapResponseToComments
 import com.example.vkapp.data.mapper.mapResponseToPosts
 import com.example.vkapp.data.network.ApiFactory.apiService
-import com.example.vkapp.domain.FeedPost
-import com.example.vkapp.domain.NewsFeedResult
-import com.example.vkapp.domain.PostComment
-import com.example.vkapp.domain.StatisticItem
-import com.example.vkapp.domain.StatisticType
+import com.example.vkapp.domain.NewsFeedRepository
+import com.example.vkapp.domain.entity.FeedPost
+import com.example.vkapp.domain.entity.NewsFeedResult
+import com.example.vkapp.domain.entity.PostComment
+import com.example.vkapp.domain.entity.StatisticItem
+import com.example.vkapp.domain.entity.StatisticType
+import com.example.vkapp.presentation.utils.mergeWith
 import com.vk.id.VKID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,12 +26,13 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
 
 
-class NewsFeedRepository {
+class NewsFeedRepositoryImpl:
+    NewsFeedRepository {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
-    private val refreshedListFlow = MutableSharedFlow<List<FeedPost>>()
+    private val refreshedListFlow = MutableSharedFlow<NewsFeedResult>()
 
     private val _feedPosts = mutableListOf<FeedPost>()
     private val feedPosts: List<FeedPost>
@@ -36,7 +40,7 @@ class NewsFeedRepository {
 
     private var nextFrom: String? = null
 
-    val recommendations: StateFlow<NewsFeedResult> = flow {
+    private val recommendations: StateFlow<NewsFeedResult> = flow {
         nextDataNeededEvents.emit(Unit)
         nextDataNeededEvents.collect {
             val token =
@@ -44,7 +48,7 @@ class NewsFeedRepository {
             val startFrom = nextFrom
 
             if (startFrom == null && feedPosts.isNotEmpty()) {
-                emit(NewsFeedResult.Success(feedPosts))
+                emit(feedPosts)
             } else {
                 val response = if (startFrom == null) {
                     apiService.loadRecommendations(token)
@@ -72,26 +76,31 @@ class NewsFeedRepository {
                 }
 
                 _feedPosts.addAll(posts)
-                emit(NewsFeedResult.Success(feedPosts))
+                emit(feedPosts)
             }
         }
     }
-        .map { NewsFeedResult.Success(feedPosts) as NewsFeedResult }
+        .map { NewsFeedResult.Success(posts = it) as NewsFeedResult }
         .retry(3) {
             delay(RETRY_TIMEOUT_MILLIS)
             true
-        }.catch { e->emit(NewsFeedResult.Error(e)) }
+        }.catch { e -> emit(NewsFeedResult.Error(e)) }
+        .mergeWith(refreshedListFlow)
         .stateIn(
             scope = coroutineScope,
             started = SharingStarted.Lazily,
             initialValue = NewsFeedResult.Loading
         )
 
-    suspend fun loadNextData() {
+    override fun getRecommendations(): StateFlow<NewsFeedResult> {
+        return recommendations
+    }
+
+    override suspend fun loadNextFeedPosts() {
         nextDataNeededEvents.emit(Unit)
     }
 
-    suspend fun changeLikeStatus(feedPost: FeedPost) {
+    override suspend fun changeLikeStatus(feedPost: FeedPost) {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
         val response = if (feedPost.isLiked) {
             apiService.deleteLike(token, feedPost.communityId, feedPost.id)
@@ -107,23 +116,24 @@ class NewsFeedRepository {
         val postIndex = _feedPosts.indexOf(feedPost)
         if (postIndex != -1) {
             _feedPosts[postIndex] = newPost
-            refreshedListFlow.emit(feedPosts)
+            refreshedListFlow.emit(NewsFeedResult.Success(feedPosts))
         }
     }
 
-    suspend fun getComments(
+    override fun getComments(
         feedPost: FeedPost,
-        offset: Int = 0,
-        commentId: Long? = null
-    ): List<PostComment> {
+        offset: Int,
+        commentId: Long?
+    ): Flow<List<PostComment>> = flow {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
-        return apiService.getComments(
+        val comments = apiService.getComments(
             accessToken = token,
             ownerId = feedPost.communityId,
             postId = feedPost.id,
             offset = offset,
             commentId = commentId
         ).mapResponseToComments()
+        emit(comments)
     }
 
     companion object {

@@ -3,6 +3,7 @@ package com.example.vkapp.presentation.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,13 +22,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.entity.FeedPost
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModel
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModelFactory
@@ -46,8 +48,27 @@ fun HomeScreen(
     val newsFeedViewModel: NewsFeedViewModel = viewModel(
         factory = NewsFeedViewModelFactory()
     )
-    val screenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
+    val newsFeedScreenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
 
+    HomeScreenContent(
+        paddingValues = paddingValues,
+        newsFeedScreenState = newsFeedScreenState,
+        newsFeedViewModel = newsFeedViewModel,
+        onCommentClickListener = onCommentClickListener,
+        onLinkClickListener= onLinkClickListener,
+        user= user,
+    )
+}
+
+@Composable
+fun HomeScreenContent(
+    paddingValues: PaddingValues,
+    newsFeedScreenState: State<NewsFeedScreenState>,
+    newsFeedViewModel: NewsFeedViewModel,
+    onCommentClickListener: (FeedPost) -> Unit,
+    onLinkClickListener: (String) -> Unit,
+    user: VKIDUser?
+) {
     LazyColumn(
         contentPadding = PaddingValues(
             top = 0.dp,
@@ -81,7 +102,7 @@ fun HomeScreen(
                 }
             }
         }
-        when (val currentState = screenState.value) {
+        when (val currentState = newsFeedScreenState.value) {
             is NewsFeedScreenState.Posts -> {
                 items(items = currentState.posts, key = { it.id }) { feedPost ->
                     PostCard(
@@ -132,7 +153,7 @@ fun HomeScreen(
                     ) {
                         CircularProgressIndicator(
                             color = Color.Gray,
-                            modifier = Modifier.size(48.dp) // Adding size to the loader
+                            modifier = Modifier.size(48.dp)
                         )
                     }
                 }

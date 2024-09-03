@@ -2,7 +2,7 @@ package com.example.vkapp.presentation.home.comments
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.entity.FeedPost
 
 class CommentsViewModelFactory(
     private val feedPost: FeedPost

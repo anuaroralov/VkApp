@@ -27,8 +27,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,8 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.R
-import com.example.vkapp.domain.FeedPost
-import com.example.vkapp.domain.PostComment
+import com.example.vkapp.domain.entity.FeedPost
+import com.example.vkapp.domain.entity.PostComment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +55,7 @@ fun CommentsScreen(
     val viewModel: CommentsViewModel = viewModel(
         factory = CommentsViewModelFactory(feedPost)
     )
-    val screenState by viewModel.screenState.observeAsState(CommentsScreenState.Initial)
+    val screenState by viewModel.screenState.collectAsState(CommentsScreenState.Initial)
     var commentText by remember { mutableStateOf("") }
     var replyingToComment by remember { mutableStateOf<PostComment?>(null) }
 

@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.vkapp.domain.PostComment
+import com.example.vkapp.domain.entity.PostComment
 
 @Composable
 fun CommentItem(

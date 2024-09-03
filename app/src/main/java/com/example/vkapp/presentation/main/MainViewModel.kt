@@ -52,9 +52,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             VKID.instance.getUserData(callback = object : VKIDGetUserCallback {
                 override fun onFail(fail: VKIDGetUserFail) {
                     when (fail) {
-                        is VKIDGetUserFail.FailedApiCall -> TODO()
-                        is VKIDGetUserFail.IdTokenTokenExpired -> TODO()
-                        is VKIDGetUserFail.NotAuthenticated -> TODO()
+                        is VKIDGetUserFail.FailedApiCall -> Log.e(
+                            "MainViewModel",
+                            "API Call Failed: ${fail.description}"
+                        )
+
+                        is VKIDGetUserFail.IdTokenTokenExpired -> Log.e(
+                            "MainViewModel",
+                            "Refresh Token Expired "
+                        )
+
+                        is VKIDGetUserFail.NotAuthenticated -> Log.e(
+                            "MainViewModel",
+                            "User Unauthorized"
+                        )
                     }
                 }
 

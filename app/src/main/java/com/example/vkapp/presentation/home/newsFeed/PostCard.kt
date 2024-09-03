@@ -27,8 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.vkapp.domain.FeedPost
-import com.example.vkapp.domain.StatisticItem
+import com.example.vkapp.domain.entity.FeedPost
+import com.example.vkapp.domain.entity.StatisticItem
 import com.example.vkapp.presentation.utils.ExpandableText
 import com.example.vkapp.presentation.utils.ImagePager
 

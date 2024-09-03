@@ -1,7 +1,7 @@
 package com.example.vkapp.presentation.home.comments
 
-import com.example.vkapp.domain.FeedPost
-import com.example.vkapp.domain.PostComment
+import com.example.vkapp.domain.entity.FeedPost
+import com.example.vkapp.domain.entity.PostComment
 
 sealed class CommentsScreenState {
 

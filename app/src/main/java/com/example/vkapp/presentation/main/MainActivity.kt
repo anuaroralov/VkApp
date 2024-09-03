@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,24 +26,29 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val viewModel: MainViewModel = viewModel()
 
-                    val authState = viewModel.authState.observeAsState()
+                    val authState = viewModel.authState.observeAsState(AuthState.Initial)
 
-                    when (authState.value) {
-                        AuthState.Authorized -> {
-                            MainScreen(viewModel.user.value)
-                        }
-
-                        AuthState.NotAuthorized -> {
-                            AuthScreen(viewModel)
-                        }
-
-                        else -> {}
-                    }
+                    MainScreenContent(authState,viewModel)
                 }
             }
         }
     }
 
+}
+
+@Composable
+fun MainScreenContent( authState: State<AuthState>, viewModel: MainViewModel){
+    when (authState.value) {
+        AuthState.Authorized -> {
+            MainScreen(viewModel.user.value)
+        }
+
+        AuthState.NotAuthorized -> {
+            AuthScreen(viewModel)
+        }
+
+        else -> {}
+    }
 }
 
 

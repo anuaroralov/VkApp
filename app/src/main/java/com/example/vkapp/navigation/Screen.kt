@@ -1,7 +1,7 @@
 package com.example.vkapp.navigation
 
 import android.net.Uri
-import com.example.vkapp.domain.FeedPost
+import com.example.vkapp.domain.entity.FeedPost
 import com.google.gson.Gson
 
 sealed class Screen(val route: String) {
