@@ -11,11 +11,22 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.vkapp.presentation.home.stories.StoriesScreen
+import com.example.vkapp.presentation.ViewModelFactory
+import com.example.vkapp.presentation.VkApplication
 import com.example.vkapp.ui.theme.VkAppTheme
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val component by lazy {
+        (application as VkApplication).component
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        component.inject(this)
         super.onCreate(savedInstanceState)
 
         setContent {
@@ -28,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
                     val authState = viewModel.authState.observeAsState(AuthState.Initial)
 
-                    MainScreenContent(authState,viewModel)
+                    MainScreenContent(authState, viewModel, viewModelFactory)
                 }
             }
         }
@@ -37,10 +48,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreenContent( authState: State<AuthState>, viewModel: MainViewModel){
+fun MainScreenContent(
+    authState: State<AuthState>,
+    viewModel: MainViewModel,
+    viewModelFactory: ViewModelFactory
+) {
     when (authState.value) {
         AuthState.Authorized -> {
-            MainScreen(viewModel.user.value)
+            MainScreen(viewModel.user.value, viewModelFactory)
         }
 
         AuthState.NotAuthorized -> {

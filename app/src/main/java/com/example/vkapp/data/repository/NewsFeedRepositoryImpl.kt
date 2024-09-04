@@ -3,7 +3,7 @@ package com.example.vkapp.data.repository
 import android.util.Log
 import com.example.vkapp.data.mapper.mapResponseToComments
 import com.example.vkapp.data.mapper.mapResponseToPosts
-import com.example.vkapp.data.network.ApiFactory.apiService
+import com.example.vkapp.data.network.ApiService
 import com.example.vkapp.domain.NewsFeedRepository
 import com.example.vkapp.domain.entity.FeedPost
 import com.example.vkapp.domain.entity.NewsFeedResult
@@ -24,10 +24,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 
-class NewsFeedRepositoryImpl:
-    NewsFeedRepository {
+class NewsFeedRepositoryImpl @Inject constructor(
+    private val apiService: ApiService,
+) : NewsFeedRepository {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -67,9 +69,7 @@ class NewsFeedRepositoryImpl:
                         videoResponse.response.videoUrls?.lastOrNull()?.videoUrl ?: ""
                     } catch (e: Exception) {
                         Log.e(
-                            "NewsFeedRepository",
-                            "Failed to get video URL for $ownerId$videoId",
-                            e
+                            "NewsFeedRepository", "Failed to get video URL for $ownerId$videoId", e
                         )
                         ""
                     }
@@ -79,18 +79,14 @@ class NewsFeedRepositoryImpl:
                 emit(feedPosts)
             }
         }
-    }
-        .map { NewsFeedResult.Success(posts = it) as NewsFeedResult }
-        .retry(3) {
-            delay(RETRY_TIMEOUT_MILLIS)
-            true
-        }.catch { e -> emit(NewsFeedResult.Error(e)) }
-        .mergeWith(refreshedListFlow)
-        .stateIn(
-            scope = coroutineScope,
-            started = SharingStarted.Lazily,
-            initialValue = NewsFeedResult.Loading
-        )
+    }.map { NewsFeedResult.Success(posts = it) as NewsFeedResult }.retry(3) {
+        delay(RETRY_TIMEOUT_MILLIS)
+        true
+    }.catch { e -> emit(NewsFeedResult.Error(e)) }.mergeWith(refreshedListFlow).stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = NewsFeedResult.Loading
+    )
 
     override fun getRecommendations(): StateFlow<NewsFeedResult> {
         return recommendations
@@ -121,9 +117,7 @@ class NewsFeedRepositoryImpl:
     }
 
     override fun getComments(
-        feedPost: FeedPost,
-        offset: Int,
-        commentId: Long?
+        feedPost: FeedPost, offset: Int, commentId: Long?
     ): Flow<List<PostComment>> = flow {
         val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
         val comments = apiService.getComments(

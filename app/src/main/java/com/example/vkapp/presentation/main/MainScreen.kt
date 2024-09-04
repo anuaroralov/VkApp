@@ -25,12 +25,13 @@ import com.example.vkapp.navigation.AppNavGraph
 import com.example.vkapp.navigation.NavigationItem
 import com.example.vkapp.navigation.Screen
 import com.example.vkapp.navigation.rememberNavigationState
+import com.example.vkapp.presentation.ViewModelFactory
 import com.example.vkapp.presentation.home.HomeScreen
 import com.example.vkapp.presentation.home.comments.CommentsScreen
 import com.vk.id.VKIDUser
 
 @Composable
-fun MainScreen(user: VKIDUser?) {
+fun MainScreen(user: VKIDUser?, viewModelFactory: ViewModelFactory) {
     val navigationState = rememberNavigationState()
     val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
 
@@ -100,7 +101,7 @@ fun MainScreen(user: VKIDUser?) {
                     onLinkClickListener = { url ->
                         openUrl(url, context = context)
                     },
-                    user = user
+                    user = user, viewModelFactory = viewModelFactory
                 )
             },
             commentsScreenContent = { feedPost ->

@@ -3,7 +3,6 @@ package com.example.vkapp.presentation.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,9 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vkapp.domain.entity.FeedPost
+import com.example.vkapp.presentation.ViewModelFactory
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedScreenState
 import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModel
-import com.example.vkapp.presentation.home.newsFeed.NewsFeedViewModelFactory
 import com.example.vkapp.presentation.home.newsFeed.PostCard
 import com.example.vkapp.presentation.home.stories.AddStory
 import com.example.vkapp.presentation.home.stories.StoryIcon
@@ -40,23 +39,23 @@ import com.vk.id.VKIDUser
 
 @Composable
 fun HomeScreen(
+    viewModelFactory: ViewModelFactory,
     paddingValues: PaddingValues,
     onCommentClickListener: (FeedPost) -> Unit,
     onLinkClickListener: (String) -> Unit,
     user: VKIDUser?
 ) {
-    val newsFeedViewModel: NewsFeedViewModel = viewModel(
-        factory = NewsFeedViewModelFactory()
-    )
-    val newsFeedScreenState = newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
+    val newsFeedViewModel: NewsFeedViewModel = viewModel(factory = viewModelFactory)
+    val newsFeedScreenState =
+        newsFeedViewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
 
     HomeScreenContent(
         paddingValues = paddingValues,
         newsFeedScreenState = newsFeedScreenState,
         newsFeedViewModel = newsFeedViewModel,
         onCommentClickListener = onCommentClickListener,
-        onLinkClickListener= onLinkClickListener,
-        user= user,
+        onLinkClickListener = onLinkClickListener,
+        user = user,
     )
 }
 

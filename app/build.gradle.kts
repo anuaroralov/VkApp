@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-parcelize")
+    id("kotlin-kapt")
 }
 
 android {
@@ -111,10 +112,12 @@ dependencies {
 
     implementation(libs.androidx.media3.ui)
 
-    implementation (libs.androidx.webkit)
+    implementation(libs.androidx.webkit)
 
-    implementation (libs.accompanist.webview)
+    implementation(libs.accompanist.webview)
 
+    implementation("com.google.dagger:dagger:2.51")
+    kapt("com.google.dagger:dagger-compiler:2.51")
 
 
 }

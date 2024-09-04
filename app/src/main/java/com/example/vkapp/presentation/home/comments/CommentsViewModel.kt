@@ -2,7 +2,6 @@ package com.example.vkapp.presentation.home.comments
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vkapp.data.repository.NewsFeedRepositoryImpl
 import com.example.vkapp.domain.entity.FeedPost
 import com.example.vkapp.domain.entity.PostComment
 import com.example.vkapp.domain.useCase.GetCommentsUseCase
@@ -10,14 +9,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CommentsViewModel(
-    feedPost: FeedPost
+class CommentsViewModel @Inject constructor(
+    private val feedPost: FeedPost,
+    private val getCommentsUseCase: GetCommentsUseCase
 ) : ViewModel() {
-
-    private val repository = NewsFeedRepositoryImpl()
-
-    private val getCommentsUseCase = GetCommentsUseCase(repository)
 
     private val _screenState = MutableStateFlow<CommentsScreenState>(CommentsScreenState.Initial)
     val screenState: StateFlow<CommentsScreenState> = _screenState.asStateFlow()
