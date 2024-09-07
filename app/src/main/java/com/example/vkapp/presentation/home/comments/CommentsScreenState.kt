@@ -11,10 +11,12 @@ sealed class CommentsScreenState {
         val feedPost: FeedPost,
         val comments: List<PostComment>,
         val nextDataIsLoading: Boolean = false,
-        val hasMoreComments:Boolean= true,
-        val offset: Int = 20
+        val hasMoreComments: Boolean = true,
+        val errorMessage: String? = null
     ) : CommentsScreenState()
 
     data object Loading : CommentsScreenState()
+
+    data class Error(val text: String) : CommentsScreenState()
 
 }

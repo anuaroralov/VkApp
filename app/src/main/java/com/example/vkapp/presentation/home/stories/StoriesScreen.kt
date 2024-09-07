@@ -133,10 +133,12 @@ fun StoriesScreen() {
             })
 
             AndroidView(
-                factory = { PlayerView(context).apply {
-                    this.player = player
-                    useController = false // Отключение элементов управления
-                } },
+                factory = {
+                    PlayerView(context).apply {
+                        this.player = player
+                        useController = false // Отключение элементов управления
+                    }
+                },
                 modifier = mediaModifier
             )
 
@@ -188,7 +190,7 @@ fun InstagramProgressIndicator(
                 else -> 1f
             }
             LinearProgressIndicator(
-                progress = stepProgress,
+                progress = { stepProgress },
                 modifier = Modifier
                     .weight(1f)
                     .padding(2.dp)

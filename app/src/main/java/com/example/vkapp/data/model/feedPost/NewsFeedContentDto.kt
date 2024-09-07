@@ -1,5 +1,6 @@
 package com.example.vkapp.data.model.feedPost
 
+import com.example.vkapp.data.model.GroupDto
 import com.google.gson.annotations.SerializedName
 
 data class NewsFeedContentDto(

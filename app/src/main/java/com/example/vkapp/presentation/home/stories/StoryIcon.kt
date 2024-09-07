@@ -1,8 +1,8 @@
 package com.example.vkapp.presentation.home.stories
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -19,18 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.vkapp.R
+import com.example.vkapp.domain.entity.Story
 import com.vk.id.VKIDUser
 
-@Preview(showBackground = true)
 @Composable
-fun StoryIcon(itemSize: Dp = 80.dp) {
+fun StoryIcon(itemSize: Dp = 80.dp, story: Story) {
     Column(
         modifier = Modifier
             .padding(4.dp, 12.dp, 4.dp, 4.dp)
@@ -38,26 +35,39 @@ fun StoryIcon(itemSize: Dp = 80.dp) {
             .background(MaterialTheme.colorScheme.surface),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
+        AsyncImage(
+            model = story.authorImg,
             contentDescription = null,
             modifier = Modifier
                 .size(itemSize - 8.dp)
                 .clip(CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                .border(3.dp, MaterialTheme.colorScheme.onPrimary, CircleShape)
+                .then(
+                    if (story.hasSeenAll) {
+                        Modifier
+                    } else {
+                        Modifier
+                            .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                            .border(3.dp, MaterialTheme.colorScheme.onPrimary, CircleShape)
+                    }
+                )
         )
-        Text("Fsdgs", color = MaterialTheme.colorScheme.primary)
+        Text(
+            text = story.authorName,
+            color = if (story.hasSeenAll) Color.Gray else MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
 @Composable
-fun AddStory(itemSize: Dp = 80.dp, user: VKIDUser) {
+fun AddStory(itemSize: Dp = 80.dp, user: VKIDUser, addStory: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(4.dp, 12.dp, 4.dp, 4.dp)
             .width(itemSize)
-            .background(MaterialTheme.colorScheme.surface),
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { addStory },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(

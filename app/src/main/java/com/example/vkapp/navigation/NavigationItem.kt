@@ -3,8 +3,6 @@ package com.example.vkapp.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import com.example.vkapp.R
 
 sealed class NavigationItem(val screen: Screen, val title: Int, val icon: Any) {

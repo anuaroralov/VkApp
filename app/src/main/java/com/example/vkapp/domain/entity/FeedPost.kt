@@ -2,7 +2,6 @@ package com.example.vkapp.domain.entity
 
 import android.os.Bundle
 import android.os.Parcelable
-import androidx.compose.runtime.Immutable
 import androidx.navigation.NavType
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize

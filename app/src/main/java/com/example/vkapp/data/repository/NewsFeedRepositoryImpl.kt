@@ -3,13 +3,15 @@ package com.example.vkapp.data.repository
 import android.util.Log
 import com.example.vkapp.data.mapper.mapResponseToComments
 import com.example.vkapp.data.mapper.mapResponseToPosts
+import com.example.vkapp.data.mapper.mapResponseToStories
 import com.example.vkapp.data.network.ApiService
 import com.example.vkapp.domain.NewsFeedRepository
+import com.example.vkapp.domain.entity.CommentsResult
 import com.example.vkapp.domain.entity.FeedPost
 import com.example.vkapp.domain.entity.NewsFeedResult
-import com.example.vkapp.domain.entity.PostComment
 import com.example.vkapp.domain.entity.StatisticItem
 import com.example.vkapp.domain.entity.StatisticType
+import com.example.vkapp.domain.entity.StoriesResult
 import com.example.vkapp.presentation.utils.mergeWith
 import com.vk.id.VKID
 import kotlinx.coroutines.CoroutineScope
@@ -82,11 +84,16 @@ class NewsFeedRepositoryImpl @Inject constructor(
     }.map { NewsFeedResult.Success(posts = it) as NewsFeedResult }.retry(3) {
         delay(RETRY_TIMEOUT_MILLIS)
         true
-    }.catch { e -> emit(NewsFeedResult.Error(e)) }.mergeWith(refreshedListFlow).stateIn(
-        scope = coroutineScope,
-        started = SharingStarted.Lazily,
-        initialValue = NewsFeedResult.Loading
-    )
+    }.catch { e ->
+        if (_feedPosts.isEmpty()) emit(NewsFeedResult.Error(e)) else emit(
+            NewsFeedResult.Success(posts = feedPosts, errorMessage = e)
+        )
+    }
+        .mergeWith(refreshedListFlow).stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.Lazily,
+            initialValue = NewsFeedResult.Loading
+        )
 
     override fun getRecommendations(): StateFlow<NewsFeedResult> {
         return recommendations
@@ -118,8 +125,11 @@ class NewsFeedRepositoryImpl @Inject constructor(
 
     override fun getComments(
         feedPost: FeedPost, offset: Int, commentId: Long?
-    ): Flow<List<PostComment>> = flow {
-        val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
+    ): Flow<CommentsResult> = flow {
+        emit(CommentsResult.Loading)
+        val token = VKID.instance.accessToken?.token
+            ?: throw IllegalStateException("Token is null")
+
         val comments = apiService.getComments(
             accessToken = token,
             ownerId = feedPost.communityId,
@@ -127,8 +137,16 @@ class NewsFeedRepositoryImpl @Inject constructor(
             offset = offset,
             commentId = commentId
         ).mapResponseToComments()
-        emit(comments)
-    }
+        emit(CommentsResult.Success(comments))
+    }.catch { e -> emit(CommentsResult.Error(e)) }
+
+
+    override fun getStories(): Flow<StoriesResult> = flow {
+        emit(StoriesResult.Loading)
+        val token = VKID.instance.accessToken?.token ?: throw IllegalStateException("Token is null")
+        val stories = apiService.getStories(token).mapResponseToStories()
+        emit(StoriesResult.Success(stories))
+    }.catch { e -> emit(StoriesResult.Error(e)) }
 
     companion object {
         private const val RETRY_TIMEOUT_MILLIS = 3000L

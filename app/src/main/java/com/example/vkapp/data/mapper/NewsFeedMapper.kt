@@ -1,16 +1,19 @@
 package com.example.vkapp.data.mapper
 
 import android.util.Log
-import com.example.vkapp.data.model.feedPost.CommentDto
-import com.example.vkapp.data.model.feedPost.CommentsResponseDto
+import com.example.vkapp.data.model.comment.CommentDto
+import com.example.vkapp.data.model.comment.CommentsResponseDto
 import com.example.vkapp.data.model.feedPost.NewsFeedResponseDto
 import com.example.vkapp.data.model.feedPost.PhotoUrlDto
+import com.example.vkapp.data.model.story.StoriesResponseDto
 import com.example.vkapp.domain.entity.CommentsReplies
 import com.example.vkapp.domain.entity.FeedPost
 import com.example.vkapp.domain.entity.Link
 import com.example.vkapp.domain.entity.PostComment
 import com.example.vkapp.domain.entity.StatisticItem
 import com.example.vkapp.domain.entity.StatisticType
+import com.example.vkapp.domain.entity.Story
+import com.example.vkapp.domain.entity.StoryItem
 import com.example.vkapp.domain.entity.Video
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
@@ -82,6 +85,64 @@ internal fun NewsFeedResponseDto.mapResponseToPosts(getVideo: suspend (String, S
         result.add(feedPost)
     }
     return result
+}
+
+internal fun StoriesResponseDto.mapResponseToStories(): List<Story> {
+
+    val stories = content.stories ?: emptyList()
+    val profiles = content.profiles ?: emptyList()
+    val groups = content.groups ?: emptyList()
+
+
+    return stories.map { storyDto ->
+
+        val authorProfile =
+            profiles.firstOrNull { it.id == storyDto.stories.firstOrNull()?.ownerId }
+        val authorGroup =
+            groups.firstOrNull { it.id == storyDto.stories.firstOrNull()?.ownerId?.absoluteValue }
+
+        val authorName: String
+        val authorAvatarUrl: String
+
+        when {
+            authorProfile != null -> {
+                authorName = "${authorProfile.firstName} ${authorProfile.lastName}"
+                authorAvatarUrl = authorProfile.avatarUrl
+            }
+
+            authorGroup != null -> {
+                authorName = authorGroup.name
+                authorAvatarUrl = authorGroup.imageUrl
+            }
+
+            else -> {
+                authorName = ""
+                authorAvatarUrl = ""
+            }
+
+        }
+
+        Story(
+            id = storyDto.id,
+            authorImg = authorAvatarUrl,
+            authorName = authorName,
+            stories = storyDto.stories.map { storyItemDto ->
+                StoryItem(
+                    id = storyItemDto.id,
+                    photoUrl = storyItemDto.photo?.photoUrls?.maxByOrNull { it.width * it.height }?.url,
+                    videoUrl = storyItemDto.video?.file?.dashWebm,
+                    link = Link(
+                        url = storyItemDto.link?.url ?: "",
+                        photo = null,
+                        title = null,
+                        caption = storyItemDto.link?.text
+                    ),
+                    date = mapTimestampToDate(storyItemDto.date)
+                )
+            },
+            hasSeenAll = !storyDto.hasUnseen
+        )
+    }
 }
 
 internal fun CommentsResponseDto.mapResponseToComments(): List<PostComment> {

@@ -1,4 +1,4 @@
-package com.example.vkapp.data.model.feedPost
+package com.example.vkapp.data.model
 
 import com.google.gson.annotations.SerializedName
 

@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class GetRecommendationsUseCase @Inject constructor(private val newsFeedRepository: NewsFeedRepository) {
 
-    operator fun invoke(): StateFlow<NewsFeedResult>{
+    operator fun invoke(): StateFlow<NewsFeedResult> {
         return newsFeedRepository.getRecommendations()
     }
 
